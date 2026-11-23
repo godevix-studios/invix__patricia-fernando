@@ -7,4 +7,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    allowedHosts: ["localhost", "scorpion-bold-repeatedly.ngrok-free.app"]
+  },
 });
