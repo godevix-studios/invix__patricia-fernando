@@ -1,0 +1,167 @@
+.intro-screen.envelope-screen {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: #011835;
+}
+
+.envelope-stage {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 500px);
+  height: 100svh;
+  overflow: hidden;
+  color: #011835;
+  background: #f9ead9;
+  box-shadow: 0 0 55px rgba(0, 8, 27, .28);
+}
+
+.envelope-reveal {
+  position: absolute;
+  z-index: 1;
+  inset: 13% 8% 23%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 18px;
+  border: 1px solid #c6a98c;
+  background: linear-gradient(145deg, #fff9ef, #f6e8d6);
+  box-shadow: 0 15px 40px rgba(1, 24, 53, .12);
+  opacity: 0;
+  text-align: center;
+  transform: translateY(22px) scale(.96);
+  transition: opacity .55s ease .36s, transform .8s cubic-bezier(.2, .8, .2, 1) .36s;
+}
+.envelope-reveal::before {
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(164, 123, 86, .42);
+  content: "";
+  pointer-events: none;
+}
+.is-open .envelope-reveal { opacity: 1; transform: translateY(0) scale(1); }
+.reveal-ornament { margin-bottom: 13px; color: #a47b56; font-size: 1.2rem; }
+.reveal-overline, .reveal-date {
+  margin: 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: .62rem;
+  letter-spacing: .18em;
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+.reveal-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 18px 0 23px;
+  font-family: "Pinyon Script", cursive;
+  font-size: clamp(3.2rem, 9vw, 4.7rem);
+  font-weight: 400;
+  line-height: .9;
+}
+.reveal-names span { display: block; }
+.reveal-names .reveal-amp { margin: .12em 0; color: #a47b56; font-size: .67em; line-height: .75; }
+
+.envelope-button {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  perspective: 1200px;
+}
+.envelope-button:disabled { pointer-events: none; }
+.envelope-button:focus-visible { outline-offset: -12px; }
+.envelope-cover {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: #feebd8 url("/imgs/envelope-lace.jpg") center / 100% 100% no-repeat;
+  filter: saturate(.76) brightness(1.025);
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+.envelope-cover-top {
+  z-index: 2;
+  clip-path: inset(0 0 34% 0);
+  transform-origin: center top;
+  transition: transform .95s cubic-bezier(.23, .72, .2, 1), opacity .55s ease .45s;
+}
+.envelope-cover-bottom {
+  z-index: 1;
+  clip-path: inset(66% 0 0 0);
+  transition: transform .85s cubic-bezier(.23, .72, .2, 1) .15s, opacity .55s ease .52s;
+}
+.is-open .envelope-cover-top { opacity: 0; transform: rotateX(72deg) translateY(-10%); }
+.is-open .envelope-cover-bottom { opacity: 0; transform: translateY(55%); }
+.cover-names {
+  position: absolute;
+  z-index: 4;
+  top: 20.5%;
+  right: 10px;
+  left: 10px;
+  color: #011835;
+  font-family: "Pinyon Script", cursive;
+  font-size: clamp(2.25rem, 8.5vw, 3rem);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  transition: opacity .3s ease, transform .65s ease;
+}
+.cover-names span { margin: 0 .08em; color: #a47b56; font-size: .75em; }
+.is-open .cover-names { opacity: 0; transform: translateY(-20px); }
+.cover-hint {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 16%;
+  left: 0;
+  color: #887969;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: .8rem;
+  letter-spacing: .27em;
+  text-align: center;
+  text-transform: uppercase;
+  transition: opacity .25s ease, transform .5s ease;
+}
+.is-open .cover-hint { opacity: 0; transform: translateY(18px); }
+
+.envelope-action {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: 8.5%;
+  left: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.primary-button.envelope-cta {
+  min-height: 56px;
+  border-color: #011835;
+  color: #feebd8;
+  background: #011835;
+  box-shadow: 0 8px 25px rgba(1, 24, 53, .15);
+  pointer-events: auto;
+}
+.primary-button.envelope-cta:hover:not(:disabled) { border-color: #011835; color: #011835; background: transparent; }
+
+@media (max-width: 680px) {
+  .envelope-stage { width: 100%; box-shadow: none; }
+  .cover-names { font-size: clamp(2.1rem, 8.5vw, 2.85rem); }
+  .cover-hint { font-size: .67rem; letter-spacing: .22em; }
+  .reveal-names { font-size: clamp(3rem, 12vw, 4.2rem); }
+}
+
+@media (max-height: 650px) {
+  .envelope-reveal { inset: 9% 8% 21%; }
+  .reveal-names { margin: 10px 0 14px; font-size: 3rem; }
+  .envelope-action { bottom: 5%; }
+  .cover-hint { bottom: 12%; }
+}

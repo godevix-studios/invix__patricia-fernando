@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./invitation.css";
+@import "./envelope.css";
 
 @theme {
   --font-sans: "Manrope", sans-serif;
@@ -32,18 +33,6 @@ img { display: block; max-width: 100%; }
   color: #feebd8;
   background: #011835;
 }
-.intro-photo {
-  position: absolute;
-  z-index: -3;
-  inset: 0 0 0 47%;
-  background: url("/imgs/3.jpeg") center 40% / cover no-repeat;
-}
-.intro-shade {
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-  background: linear-gradient(90deg, #011835 3%, #011835 31%, rgba(1, 24, 53, .93) 46%, rgba(1, 24, 53, .34) 72%, rgba(1, 24, 53, .12) 100%);
-}
 .intro-frame {
   position: absolute;
   z-index: -1;
@@ -63,41 +52,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: .25em;
 }
 .intro-topline span:first-child { font-family: var(--font-display); font-size: 1.08rem; letter-spacing: .08em; }
-.intro-content {
-  width: min(690px, 55vw);
-  margin-left: clamp(72px, 9vw, 156px);
-  padding: 120px 0;
-}
-.intro-invitation {
-  max-width: 25rem;
-  margin: 0 0 32px;
-  font-size: .78rem;
-  font-weight: 500;
-  letter-spacing: .23em;
-  line-height: 1.9;
-  text-transform: uppercase;
-}
-.intro-content h1 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(3.3rem, 5.8vw, 6rem);
-  font-weight: 400;
-  letter-spacing: -.035em;
-  line-height: 1.2;
-  text-wrap: balance;
-}
-.intro-content h1 span {
-  display: block;
-  margin: .05em 0;
-  color: #d9ad82;
-  font-style: italic;
-  font-size: .8em;
-}
-.intro-date {
-  margin: 26px 0 40px;
-  font-family: var(--font-display);
-  font-size: 1.28rem;
-}
 .intro-bottomline {
   position: absolute;
   bottom: 48px;
@@ -128,20 +82,9 @@ img { display: block; max-width: 100%; }
 .primary-button:hover:not(:disabled) { transform: translateY(-3px); color: #feebd8; background: transparent; }
 .primary-button svg, .text-link svg { width: 22px; height: 22px; flex: 0 0 auto; }
 
-@media (max-width: 900px) {
-  .intro-photo { inset: 0; background-position: 54% center; }
-  .intro-shade { background: linear-gradient(90deg, rgba(1,24,53,.93), rgba(1,24,53,.52)), linear-gradient(0deg, rgba(1,24,53,.72), transparent 45%); }
-  .intro-content { width: min(620px, calc(100% - 96px)); margin: 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; }
-  .intro-invitation { margin-bottom: 24px; }
-}
-
 @media (max-width: 680px) {
   .intro-frame { inset: 14px; }
   .intro-topline { top: 31px; right: 34px; left: 34px; font-size: .57rem; }
-  .intro-content { width: calc(100% - 56px); padding: 120px 0 110px; }
-  .intro-invitation { max-width: 17rem; font-size: .65rem; letter-spacing: .16em; }
-  .intro-content h1 { font-size: clamp(2.65rem, 12vw, 4.4rem); }
-  .intro-date { font-size: 1rem; }
   .intro-bottomline { bottom: 31px; left: 34px; right: 34px; font-size: .52rem; text-align: center; }
   .primary-button { min-height: 58px; gap: 25px; padding: 0 18px 0 22px; font-size: .7rem; }
 }

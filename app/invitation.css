@@ -41,7 +41,7 @@
   inset: 0;
   background: linear-gradient(180deg, rgba(1,24,53,.12) 18%, rgba(1,24,53,.12) 40%, rgba(1,24,53,.65) 75%, rgba(1,24,53,.94) 100%);
 }
-.open-hero-content { width: min(90%, 850px); padding: 0 0 clamp(95px, 11vh, 145px); }
+.open-hero-content { width: min(90%, 1100px); padding: 0 0 clamp(95px, 11vh, 145px); }
 .open-hero-intro, .open-hero-venue {
   margin-bottom: 12px;
   font-family: "Cinzel", Georgia, serif;
@@ -52,7 +52,7 @@
 .open-hero h1 {
   margin: 0;
   font-family: "Pinyon Script", cursive;
-  font-size: clamp(4.4rem, 10vw, 6rem);
+  font-size: clamp(6rem, 11vw, 8.5rem);
   font-weight: 400;
   line-height: 1;
   text-wrap: balance;
@@ -142,8 +142,8 @@
 }
 .photo-band::before { top: 0; background: linear-gradient(var(--paper-light), transparent); }
 .photo-band::after { bottom: 0; background: linear-gradient(transparent, var(--paper-light)); }
-.photo-kiss img { object-position: center 25%; }
-.photo-embrace img { object-position: center 32%; }
+.photo-kiss img { object-position: center 35%; }
+.photo-embrace img { object-position: center 35%; }
 
 .journey-section { background: linear-gradient(180deg, var(--paper-light), #f0e2cf 48%, var(--paper-light)); }
 .journey-section p + p { margin-top: 32px; }
@@ -182,10 +182,16 @@
   letter-spacing: -.03em;
   line-height: 1;
 }
+.countdown { max-width: 450px; margin: 0 auto 37px; padding-top: 27px; border-top: 1px solid rgba(1, 24, 53, .22); }
+.date-section .countdown-intro { margin-bottom: 17px; font-family: "Cinzel", Georgia, serif; font-size: .62rem; font-style: normal; letter-spacing: .22em; text-transform: uppercase; }
+.countdown-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.countdown-unit { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.countdown-number { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(2.6rem, 5vw, 3.6rem); font-variant-numeric: tabular-nums; line-height: 1; }
+.countdown-label { font-family: "Cinzel", Georgia, serif; font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; }
+.date-section .countdown-arrived { margin: 0 auto 34px; padding-top: 27px; border-top: 1px solid rgba(1, 24, 53, .22); font-family: "Pinyon Script", cursive; font-size: 2.8rem; }
 .date-section .date-closing { font-size: 1.4rem; }
 
 .promise-section { padding-top: 140px; padding-bottom: 155px; }
-.promise-section .promise-last { margin-top: 30px; color: var(--ink); font-family: "Pinyon Script", cursive; font-size: 3.4rem; line-height: 1; }
 
 .blessing-section { padding: 30px 24px 155px; background: var(--paper-light); text-align: center; }
 .blessing-inner { max-width: 790px; margin: auto; padding: 85px 40px 90px; border-top: 1px solid #c8aa87; border-bottom: 1px solid #c8aa87; }
@@ -197,12 +203,32 @@
 .venue-line { width: 1px; height: 100px; margin: 45px auto 43px; background: var(--gold); }
 .venue-section h3 { max-width: 700px; margin: 12px auto 21px; font-family: "Pinyon Script", cursive; font-size: clamp(3.5rem, 6vw, 5.3rem); font-weight: 400; line-height: 1.1; }
 .venue-section span { font-family: "Cinzel", Georgia, serif; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; }
+.venue-map { width: min(100%, 620px); margin: 52px auto 0; padding: 10px; border: 1px solid #c8aa87; background: var(--paper-light); }
+.venue-map iframe { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; border: 0; }
+
+.itinerary-section { padding: 125px 24px 140px; color: var(--paper); background: var(--ink); }
+.itinerary-inner { max-width: 760px; margin: 0 auto; }
+.itinerary-section .tiny-rule { background: #c8aa87; }
+.itinerary-section h2 { margin: 0; font-family: "Pinyon Script", cursive; font-size: clamp(3.8rem, 7vw, 5.8rem); font-weight: 400; line-height: 1.05; text-align: center; }
+.itinerary-list { margin: 75px 0 0; padding: 0; list-style: none; }
+.itinerary-item { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 36px; }
+.itinerary-time { padding-top: 12px; color: #d8b895; font-family: "Cinzel", Georgia, serif; font-size: .72rem; letter-spacing: .08em; text-align: right; white-space: nowrap; }
+.itinerary-detail { position: relative; min-height: 150px; padding: 0 0 48px 42px; border-left: 1px solid rgba(216, 184, 149, .55); }
+.itinerary-icon { position: absolute; top: 0; left: -21px; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #d8b895; border-radius: 50%; color: #d8b895; background: var(--ink); }
+.itinerary-icon svg { width: 25px; height: 25px; }
+.itinerary-item:last-child .itinerary-detail { min-height: 0; padding-bottom: 0; border-left-color: transparent; }
+.itinerary-detail h3 { margin: 0 0 10px; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.9rem, 3vw, 2.3rem); font-weight: 400; line-height: 1.1; }
+.itinerary-detail p { max-width: 31rem; margin: 0; color: #e3d4c5; font-size: clamp(1.17rem, 1.7vw, 1.35rem); line-height: 1.4; }
 
 .dress-section { padding: 40px 24px 145px; background: var(--paper-light); text-align: center; }
 .dress-paper { max-width: 760px; margin: auto; padding: 90px 40px 100px; background: linear-gradient(145deg, #f1e2ce, #e9d3b9); }
 .dress-section p { max-width: 30rem; }
-.reserved-colors { display: flex; justify-content: center; gap: 12px; margin-top: 35px; }
-.color-swatch { display: block; width: 32px; height: 32px; border: 1px solid rgba(1,24,53,.18); border-radius: 50%; }
+.reserved-colors { display: flex; justify-content: center; gap: 30px; margin-top: 35px; }
+.reserved-color { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.color-swatch { position: relative; display: block; width: 54px; height: 54px; border: 1px solid rgba(1,24,53,.18); border-radius: 50%; }
+.color-swatch::before { content: ""; position: absolute; inset: 7px; border: 2.5px solid var(--paper-light); border-radius: 50%; }
+.color-swatch::after { content: ""; position: absolute; top: 50%; left: 50%; width: 38px; height: 2.5px; background: var(--paper-light); transform: translate(-50%, -50%) rotate(45deg); }
+.reserved-color-label { font-family: "Cinzel", Georgia, serif; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; }
 .coffee { background: #73533e; }
 .blue { background: #486783; }
 
@@ -235,12 +261,15 @@
 .site-footer strong { font-family: "Pinyon Script", cursive; font-size: clamp(3rem, 5vw, 4.5rem); font-weight: 400; line-height: 1.2; }
 .site-footer strong span { color: var(--gold); }
 .site-footer small { margin-top: 16px; font-family: "Cinzel", Georgia, serif; font-size: .62rem; letter-spacing: .18em; }
+.site-footer .footer-credit { margin-top: 46px; color: var(--ink-soft); font-family: "Manrope", sans-serif; font-size: .65rem; letter-spacing: .02em; }
+.footer-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 3px; }
+.footer-credit a:hover { color: var(--ink); }
 .music-embed { position: fixed; width: 1px; height: 1px; bottom: 0; left: 0; border: 0; opacity: 0; pointer-events: none; }
 
 @media (max-width: 700px) {
   .open-hero-image { object-position: center center; }
   .open-hero-content { padding-bottom: 125px; }
-  .open-hero h1 { font-size: clamp(3.5rem, 15vw, 5.3rem); line-height: .96; }
+  .open-hero h1 { font-size: clamp(4.4rem, 17vw, 6.2rem); line-height: .96; }
   .open-hero h1 span { display: block; margin: .12em 0; }
   .open-hero-intro { font-size: .62rem; }
   .open-hero-date { margin-top: 23px; font-size: 1.32rem; }
@@ -259,6 +288,10 @@
   .date-line { gap: 7px; margin-top: 41px; }
   .date-line span { width: 72px; font-size: .58rem; }
   .date-line strong { padding: 0 17px; font-size: 4.7rem; }
+  .countdown { margin-bottom: 28px; padding-top: 23px; }
+  .countdown-grid { gap: 4px; }
+  .countdown-number { font-size: clamp(2.3rem, 10vw, 3rem); }
+  .countdown-label { font-size: .43rem; letter-spacing: .04em; }
   .date-section .date-closing { font-size: 1.3rem; }
   .promise-section { padding-top: 110px; padding-bottom: 120px; }
   .blessing-section { padding: 0 22px 100px; }
@@ -269,6 +302,17 @@
   .venue-line { height: 80px; }
   .venue-section h3 { font-size: 4rem; }
   .venue-section span { font-size: .57rem; }
+  .venue-map { margin-top: 38px; padding: 6px; }
+  .itinerary-section { padding: 90px 22px 105px; }
+  .itinerary-section h2 { font-size: clamp(3.7rem, 14vw, 5.2rem); }
+  .itinerary-list { margin-top: 55px; }
+  .itinerary-item { grid-template-columns: 72px minmax(0, 1fr); gap: 16px; }
+  .itinerary-time { padding-top: 11px; font-size: .58rem; letter-spacing: .02em; }
+  .itinerary-detail { min-height: 165px; padding: 0 0 42px 34px; }
+  .itinerary-icon { left: -18px; width: 36px; height: 36px; }
+  .itinerary-icon svg { width: 22px; height: 22px; }
+  .itinerary-detail h3 { font-size: clamp(1.6rem, 6.5vw, 2rem); }
+  .itinerary-detail p { font-size: 1.16rem; }
   .dress-section { padding: 10px 22px 100px; }
   .dress-paper { padding: 70px 20px 80px; }
   .rsvp-section { padding: 70px 24px 110px; }
