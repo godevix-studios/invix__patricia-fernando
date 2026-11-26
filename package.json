@@ -5,28 +5,37 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "start": "wrangler dev --config build/server/wrangler.json",
+    "typecheck": "react-router typegen && tsc",
+    "deploy": "npm run build && wrangler deploy --config build/server/wrangler.json",
+    "db:migrate:local": "wrangler d1 execute patricia-fernando-db --local --file=migrations/0001_initial.sql",
+    "db:migrate:remote": "wrangler d1 execute patricia-fernando-db --remote --file=migrations/0001_initial.sql"
   },
   "dependencies": {
-    "@react-router/node": "^8.5.2",
-    "@react-router/serve": "^8.5.2",
+    "@react-router/cloudflare": "^8.5.3",
+    "@react-router/node": "^8.5.3",
+    "@react-router/serve": "^8.5.3",
     "clsx": "^2.1.1",
     "isbot": "^5.1.36",
     "motion": "^14.14.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router": "^8.5.2",
+    "react-router": "^8.5.3",
     "tailwind-merge": "^3.7.1"
   },
   "devDependencies": {
-    "@react-router/dev": "^8.5.2",
+    "@cloudflare/vite-plugin": "^1.70.2",
+    "@cloudflare/workers-types": "^4.0.0",
+    "@react-router/dev": "^8.5.3",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "nanoid": "^6.0.2",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "wrangler": "^4.168.0"
   }
 }

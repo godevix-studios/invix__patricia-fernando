@@ -1,87 +1,186 @@
-# Welcome to React Router!
+# Patricia & Fernando - Invitación de Boda
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Invitación digital de boda con panel de administración para gestionar invitados, mesas y confirmaciones.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Características
 
-## Features
+- 💌 **Invitación digital interactiva** - Diseño elegante con animaciones y música
+- 👥 **Gestión de invitados** - Individuales o grupos con representante
+- 🪑 **Gestión de mesas** - Asignación automática y manual
+- 🎫 **Pool de pases** - Reasignación de pases no utilizados
+- 📱 **WhatsApp integrado** - Envío de invitaciones con plantilla personalizable
+- ✅ **Confirmación online** - Los invitados confirman y completan nombres
+- ☁️ **Cloudflare D1** - Base de datos SQLite en el edge
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Stack Tecnológico
 
-## Getting Started
+- React Router 8 (SSR)
+- Vite 8
+- Tailwind CSS v4
+- Cloudflare D1 (SQLite)
 
-### Installation
+## Desarrollo Local
 
-Install the dependencies:
+### Requisitos
+
+- Node.js 18+
+- npm
+
+### Instalación
 
 ```bash
+# Instalar dependencias
 npm install
+
+# Copiar variables de entorno
+cp .dev.vars.example .dev.vars
 ```
 
-### Development
+### Inicializar base de datos local
 
-Start the development server with HMR:
+```bash
+# Ejecutar migración inicial
+npm run db:migrate:local
+```
+
+### Iniciar servidor de desarrollo
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+La aplicación estará disponible en `http://localhost:5173`.
 
-## Building for Production
+### Acceso al panel de administración
 
-Create a production build:
+- URL: `http://localhost:5173/admin`
+- Usuario: `admin`
+- Contraseña: `admin123`
+
+**⚠️ Importante:** Cambia la contraseña inmediatamente en Configuración.
+
+## Estructura del Proyecto
+
+```
+├── app/
+│   ├── lib/              # Utilidades (auth, db)
+│   ├── routes/
+│   │   ├── admin/        # Panel de administración
+│   │   ├── home.tsx      # Invitación pública
+│   │   ├── invitation.tsx # Invitación personalizada
+│   │   └── confirm.tsx   # Confirmación de asistencia
+│   └── routes.ts         # Configuración de rutas
+├── migrations/           # Migraciones SQL
+├── scripts/              # Scripts de utilidad
+└── wrangler.toml         # Configuración de Cloudflare
+```
+
+## Rutas Principales
+
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Invitación pública (sin personalización) |
+| `/i/:token` | Invitación personalizada para un invitado |
+| `/confirmar/:token` | Página de confirmación de asistencia |
+| `/admin` | Panel de administración |
+| `/admin/guests` | Gestión de invitados |
+| `/admin/tables` | Gestión de mesas |
+| `/admin/pool` | Pool de pases libres |
+| `/admin/settings` | Configuración (WhatsApp, contraseña) |
+
+## Flujo de Uso
+
+1. **Admin crea invitados** en `/admin/guests/new`
+2. **Admin envía enlaces** por WhatsApp usando el botón integrado
+3. **Invitado recibe enlace** personalizado (`/i/:token`)
+4. **Invitado confirma** en `/confirmar/:token`
+5. **Admin ve confirmaciones** en el dashboard
+
+## Despliegue en Cloudflare
+
+### Pre-requisitos
+
+1. Cuenta de Cloudflare (plan gratuito funciona)
+2. Wrangler CLI (`npm install -g wrangler`)
+3. Autenticarse: `wrangler login`
+
+### Crear base de datos D1
 
 ```bash
+# Crear la base de datos
+npx wrangler d1 create patricia-fernando-db
+```
+
+Copia el `database_id` que aparece y actualiza `wrangler.toml`.
+
+### Ejecutar migración remota
+
+```bash
+npm run db:migrate:remote
+```
+
+### Configurar variables de producción
+
+En `wrangler.toml`, actualiza:
+```toml
+[vars]
+APP_URL = "https://tu-dominio.pages.dev"
+```
+
+### Desplegar
+
+```bash
+npm run deploy
+```
+
+> **Nota:** Para despliegue completo en Cloudflare Workers/Pages con SSR, 
+> se requiere configuración adicional del entry point del worker.
+> Para un MVP, considera usar el servidor Node.js incluido.
+
+## Despliegue Alternativo (Node.js)
+
+Si prefieres un despliegue tradicional:
+
+```bash
+# Build
 npm run build
+
+# Iniciar servidor
+npm run start
 ```
 
-## Deployment
+Despliega en Railway, Render, Fly.io, o cualquier plataforma que soporte Node.js.
 
-### Docker Deployment
+## Cambiar Contraseña del Admin
 
-To build and run using Docker:
+1. Accede a `/admin/settings`
+2. En "Cambiar Contraseña", ingresa:
+   - Contraseña actual
+   - Nueva contraseña (mínimo 6 caracteres)
+   - Confirmar nueva contraseña
+3. Clic en "Cambiar Contraseña"
 
-```bash
-docker build -t my-app .
+## Personalizar Plantilla de WhatsApp
 
-# Run the container
-docker run -p 3000:3000 my-app
-```
+1. Accede a `/admin/settings`
+2. Edita la plantilla usando estas variables:
+   - `{nombre}` - Nombre del invitado
+   - `{enlace}` - Enlace de invitación
+   - `{novios}` - Nombres de los novios
+   - `{fecha}` - Fecha del evento
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Comandos Disponibles
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run start` | Servidor de producción (Wrangler) |
+| `npm run typecheck` | Verificar tipos TypeScript |
+| `npm run db:migrate:local` | Migrar DB local |
+| `npm run db:migrate:remote` | Migrar DB remota |
+| `npm run deploy` | Build + Deploy a Cloudflare |
 
 ---
 
-Built with ❤️ using React Router.
+Desarrollado por [Godevix Studios](https://www.godevix-studios.com/)

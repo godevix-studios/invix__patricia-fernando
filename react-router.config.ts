@@ -1,7 +1,6 @@
 import type { Config } from "@react-router/dev/config";
 
 export default {
-  // Config options...
-  // Server-side render by default, to enable SPA mode set this to `false`
-  ssr: false,
+  // Server-side render habilitado para usar D1 y Cloudflare Pages
+  ssr: true,
 } satisfies Config;

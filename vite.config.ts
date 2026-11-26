@@ -1,11 +1,18 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter()],
+  plugins: [
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    tailwindcss(),
+    reactRouter(),
+  ],
   resolve: {
-    tsconfigPaths: true,
+    alias: {
+      "~": "/app",
+    },
   },
   server: {
     allowedHosts: ["localhost", "scorpion-bold-repeatedly.ngrok-free.app"]

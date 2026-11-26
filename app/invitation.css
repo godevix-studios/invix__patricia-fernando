@@ -193,11 +193,99 @@
 
 .promise-section { padding-top: 140px; padding-bottom: 155px; }
 
+/* Blessing Hero - Full screen section */
+.blessing-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 40px 24px 60px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-light) 50%, var(--paper-deep) 100%);
+  text-align: center;
+}
+.blessing-hero-inner {
+  max-width: 790px;
+  padding: 45px 40px 50px;
+  border-top: 1px solid #c8aa87;
+  border-bottom: 1px solid #c8aa87;
+}
+.blessing-hero h2 {
+  margin: 0 0 20px;
+  color: var(--ink);
+  font-family: "Pinyon Script", cursive;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 400;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.blessing-hero p {
+  margin: 2px auto 0;
+  color: var(--ink-soft);
+  font-size: 1.6rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+.blessing-hero .blessing-greeting {
+  margin-bottom: 15px;
+  color: var(--gold);
+  font-family: "Pinyon Script", cursive;
+  font-size: clamp(2rem, 4.5vw, 2.6rem);
+  font-style: normal;
+}
+.blessing-hero .mothers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 35px;
+  font-family: "Pinyon Script", cursive;
+  font-size: 2.2rem;
+  font-weight: 400;
+  letter-spacing: .02em;
+  line-height: 1.25;
+  text-transform: none;
+}
+.blessing-hero .mothers span {
+  display: block;
+  color: var(--ink);
+}
+.blessing-hero .mothers-amp {
+  color: var(--gold);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  font-style: italic;
+}
+@media (min-width: 480px) {
+  .blessing-hero .mothers {
+    font-size: 2.8rem;
+  }
+  .blessing-hero .mothers-amp {
+    font-size: 2rem;
+  }
+}
+@media (min-width: 768px) {
+  .blessing-hero .mothers {
+    font-size: 3.5rem;
+  }
+  .blessing-hero .mothers-amp {
+    font-size: 2.4rem;
+  }
+}
+.blessing-hero .scroll-cue {
+  position: absolute;
+  bottom: 19px;
+  color: var(--ink-soft);
+}
+.blessing-hero .scroll-cue:hover {
+  color: var(--ink);
+}
+
 .blessing-section { padding: 30px 24px 155px; background: var(--paper-light); text-align: center; }
 .blessing-inner { max-width: 790px; margin: auto; padding: 85px 40px 90px; border-top: 1px solid #c8aa87; border-bottom: 1px solid #c8aa87; }
 .blessing-section p { margin-top: 2px; font-size: 1.6rem; font-style: italic; }
-.mothers { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 47px; font-family: "Cinzel", Georgia, serif; font-size: .7rem; font-weight: 500; letter-spacing: .07em; line-height: 2; text-transform: uppercase; }
-.mothers-amp { color: var(--gold); font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.8rem; font-style: italic; }
 
 .venue-section { padding: 125px 24px 175px; background: linear-gradient(180deg, var(--paper-light), #f0e2cf 50%, var(--paper-light)); text-align: center; }
 .venue-line { width: 1px; height: 100px; margin: 45px auto 43px; background: var(--gold); }
@@ -249,9 +337,17 @@
   font-size: .7rem;
   letter-spacing: .12em;
   text-transform: uppercase;
+  text-decoration: none;
   opacity: 1;
-  cursor: default;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
 }
+.rsvp-button:hover { transform: translateY(-2px); background: #0a2847; }
+.rsvp-button--confirmed {
+  background: #2d5a3d;
+  border-color: #2d5a3d;
+}
+.rsvp-button--confirmed:hover { background: #3d7a52; }
 .rsvp-button svg { width: 18px; height: 18px; }
 
 .site-footer { display: flex; flex-direction: column; align-items: center; padding: 50px 24px 80px; border-top: 1px solid #dcc7ad; background: var(--paper-light); text-align: center; }
@@ -294,10 +390,14 @@
   .countdown-label { font-size: .43rem; letter-spacing: .04em; }
   .date-section .date-closing { font-size: 1.3rem; }
   .promise-section { padding-top: 110px; padding-bottom: 120px; }
+  .blessing-hero { padding: 50px 22px; }
+  .blessing-hero-inner { padding: 55px 15px 60px; }
+  .blessing-hero h2 { font-size: clamp(3.7rem, 14vw, 5.2rem); }
+  .blessing-hero p { font-size: 1.4rem; }
+  .blessing-hero .mothers { flex-direction: column; gap: 6px; margin-top: 35px; font-size: 2.2rem; }
   .blessing-section { padding: 0 22px 100px; }
   .blessing-inner { padding: 75px 5px 80px; }
   .blessing-section p { font-size: 1.4rem; }
-  .mothers { flex-direction: column; gap: 4px; margin-top: 35px; font-size: .61rem; }
   .venue-section { padding: 90px 22px 120px; }
   .venue-line { height: 80px; }
   .venue-section h3 { font-size: 4rem; }

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "patricia-fernando-invitacion",
+  "compatibility_date": "2024-11-18",
+  "compatibility_flags": ["nodejs_compat"],
+  
+  // Entry point del Worker
+  "main": "./workers/app.ts",
+  
+  // Assets estáticos
+  "assets": {
+    "directory": "./build/client"
+  },
+  
+  // D1 Database
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "patricia-fernando-db",
+      "database_id": "6bf32755-2d58-4ec4-a108-5fff265951e2" // Reemplazar con el ID real después de crear la DB
+    }
+  ],
+  
+  // Variables de entorno
+  "vars": {
+    "APP_URL": "https://patricia-fernando-invitacion.godevixstudios.workers.dev"
+  },
+  
+  // Observability (opcional)
+  "observability": {
+    "enabled": true
+  }
+}

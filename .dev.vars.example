@@ -1,0 +1,5 @@
+# Variables de entorno para desarrollo local
+# Copia este archivo a .dev.vars y configura los valores
+
+# URL de la aplicación (para generar enlaces de invitación)
+APP_URL=http://localhost:5173

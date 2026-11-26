@@ -218,6 +218,12 @@ function PhotoBand({ src, alt, placement }: { src: string; alt: string; placemen
 function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusic: () => void }) {
   const reduceMotion = useReducedMotion();
 
+  const fadeInUp = (delay: number) => ({
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : delay, ease: "easeOut" },
+  });
+
   return (
     <motion.main
       className="invitation"
@@ -225,6 +231,35 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
       animate={{ opacity: 1 }}
       transition={{ duration: reduceMotion ? 0 : 0.4 }}
     >
+      {/* 1. Bendición de las mamás (Hero principal) */}
+      <section className="blessing-hero" aria-labelledby="blessing-title">
+        <div className="blessing-hero-inner">
+          <motion.div className="tiny-rule" aria-hidden="true" {...fadeInUp(0.2)} />
+          <motion.h2 id="blessing-title" {...fadeInUp(0.5)}>
+            Con la bendición de Dios y el amor de nuestras madres
+          </motion.h2>
+          <motion.div className="mothers" {...fadeInUp(1.0)}>
+            <span>María Felicitas Cazares Alvarado</span>
+            <span className="mothers-amp" aria-hidden="true">&amp;</span>
+            <span>Maria Trinidad Castañon Hernandez</span>
+          </motion.div>
+        </div>
+        <motion.a 
+          className="scroll-cue" 
+          href="#inicio" 
+          aria-label="Ir a la siguiente sección"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 1.6 }}
+        >
+          <span>Desliza para descubrir</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3v17m-6-6 6 6 6-6" stroke="currentColor" strokeWidth="1.3" />
+          </svg>
+        </motion.a>
+      </section>
+
+      {/* 2. Hero (nombres de los novios) */}
       <section className="open-hero" id="inicio" aria-labelledby="open-title">
         <img
           className="open-hero-image"
@@ -240,12 +275,12 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
           <span className="open-hero-rule" aria-hidden="true" />
           <p className="open-hero-venue">Hacienda la Victoria</p>
         </div>
-        <a className="scroll-cue" href="#historia" aria-label="Ir a nuestra historia">
-          <span>Desliza para descubrir</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3v17m-6-6 6 6 6-6" stroke="currentColor" strokeWidth="1.3" />
-          </svg>
-        </a>
+            {/* <a className="scroll-cue" href="#historia" aria-label="Ir a nuestra historia">
+              <span>Desliza para descubrir</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v17m-6-6 6 6 6-6" stroke="currentColor" strokeWidth="1.3" />
+              </svg>
+            </a> */}
       </section>
 
       <button
@@ -258,6 +293,7 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
         <MusicIcon playing={playing} />
       </button>
 
+      {/* 3. Historia (con fotos) */}
       <section className="paper-section story-opening" id="historia" aria-labelledby="story-title">
         <div className="tiny-rule" aria-hidden="true" />
         <h2 id="story-title">Nuestra historia</h2>
@@ -290,52 +326,20 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
         <p>{storyText.promise}</p>
       </section>
 
+      {/* 4. Cuenta regresiva */}
       <section className="date-section" aria-labelledby="date-title">
         <div className="date-paper">
           <h2 id="date-title">El gran día</h2>
-          <p>El día en que empezamos una nueva historia</p>
           <div className="date-line" aria-label="Viernes 23 de enero de 2027">
             <span>Viernes</span>
             <strong>23</strong>
             <span>Enero · 2027</span>
           </div>
           <Countdown />
-          <p className="date-closing">para elegirnos cada día</p>
         </div>
       </section>
 
-      <section className="blessing-section" aria-labelledby="blessing-title">
-        <div className="blessing-inner">
-          <div className="tiny-rule" aria-hidden="true" />
-          <h2 id="blessing-title">Con la bendición de Dios</h2>
-          <p>y el amor de nuestras madres</p>
-          <div className="mothers">
-            <span>María Felicitas Cazares Alvarado</span>
-            <span className="mothers-amp" aria-hidden="true">&amp;</span>
-            <span>Maria Trinidad Castañon Hernandez</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="venue-section" aria-labelledby="venue-title">
-        <div className="tiny-rule" aria-hidden="true" />
-        <h2 id="venue-title">Dónde nos vemos</h2>
-        <div className="venue-line" aria-hidden="true" />
-        <p>Nos encantará celebrar contigo en</p>
-        <h3>Hacienda la Victoria</h3>
-        <div className="venue-map">
-          <iframe
-            src={venueMapUrl}
-            title="Mapa de Hacienda la Victoria"
-            width="600"
-            height="450"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        </div>
-      </section>
-
+      {/* 5. Itinerario */}
       <section className="itinerary-section" aria-labelledby="itinerary-title">
         <div className="itinerary-inner">
           <div className="tiny-rule" aria-hidden="true" />
@@ -355,6 +359,27 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
         </div>
       </section>
 
+      {/* 6. Ubicación */}
+      <section className="venue-section" aria-labelledby="venue-title">
+        <div className="tiny-rule" aria-hidden="true" />
+        <h2 id="venue-title">¿Dónde nos vemos?</h2>
+        <div className="venue-line" aria-hidden="true" />
+        <p>Nos encantará celebrar contigo en</p>
+        <h3>Hacienda la Victoria</h3>
+        <div className="venue-map">
+          <iframe
+            src={venueMapUrl}
+            title="Mapa de Hacienda la Victoria"
+            width="600"
+            height="450"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+      </section>
+
+      {/* 7. Código de vestimenta */}
       <section className="dress-section" aria-labelledby="dress-title">
         <div className="dress-paper">
           <div className="tiny-rule" aria-hidden="true" />
@@ -373,15 +398,7 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
         </div>
       </section>
 
-      <section className="rsvp-section" aria-labelledby="rsvp-title">
-        <div className="tiny-rule" aria-hidden="true" />
-        <h2 id="rsvp-title">¿Nos acompañas?</h2>
-        <p>Confírmanos si podremos compartir contigo este día tan especial.</p>
-        <button className="rsvp-button" type="button" disabled>
-          Confirmar asistencia <ArrowIcon diagonal />
-        </button>
-      </section>
-
+      {/* 8. Footer (sin sección RSVP) */}
       <footer className="site-footer">
         <div className="footer-ornament" aria-hidden="true"><span>&amp;</span></div>
         <p>Gracias por ser parte de nuestra historia</p>

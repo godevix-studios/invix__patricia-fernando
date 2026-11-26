@@ -1,0 +1,162 @@
+{
+  "_cn-DcR91HI6.js": {
+    "file": "assets/cn-DcR91HI6.js",
+    "name": "cn",
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "_jsx-runtime-Cu1ullCA.js": {
+    "file": "assets/jsx-runtime-Cu1ullCA.js",
+    "name": "jsx-runtime"
+  },
+  "app/root.tsx?__react-router-build-client-route": {
+    "file": "assets/root-DvcIdC22.js",
+    "name": "root",
+    "src": "app/root.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ],
+    "css": [
+      "assets/root-B2SASaBH.css"
+    ]
+  },
+  "app/routes/admin/dashboard.tsx?__react-router-build-client-route": {
+    "file": "assets/dashboard-DDBaH3zt.js",
+    "name": "dashboard",
+    "src": "app/routes/admin/dashboard.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/guests-edit.tsx?__react-router-build-client-route": {
+    "file": "assets/guests-edit-DceRTEoT.js",
+    "name": "guests-edit",
+    "src": "app/routes/admin/guests-edit.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/guests-new.tsx?__react-router-build-client-route": {
+    "file": "assets/guests-new-B-D_ham2.js",
+    "name": "guests-new",
+    "src": "app/routes/admin/guests-new.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/guests.tsx?__react-router-build-client-route": {
+    "file": "assets/guests-Czlp1Rpf.js",
+    "name": "guests",
+    "src": "app/routes/admin/guests.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/layout.tsx?__react-router-build-client-route": {
+    "file": "assets/layout-_aMb_-hg.js",
+    "name": "layout",
+    "src": "app/routes/admin/layout.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/login.tsx?__react-router-build-client-route": {
+    "file": "assets/login-DKTnzYQd.js",
+    "name": "login",
+    "src": "app/routes/admin/login.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/pool.tsx?__react-router-build-client-route": {
+    "file": "assets/pool-DchMF3ky.js",
+    "name": "pool",
+    "src": "app/routes/admin/pool.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/settings.tsx?__react-router-build-client-route": {
+    "file": "assets/settings-FzZ_42hN.js",
+    "name": "settings",
+    "src": "app/routes/admin/settings.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/tables-edit.tsx?__react-router-build-client-route": {
+    "file": "assets/tables-edit-CRYehOUH.js",
+    "name": "tables-edit",
+    "src": "app/routes/admin/tables-edit.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/tables-new.tsx?__react-router-build-client-route": {
+    "file": "assets/tables-new-C4sTnJCt.js",
+    "name": "tables-new",
+    "src": "app/routes/admin/tables-new.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/admin/tables.tsx?__react-router-build-client-route": {
+    "file": "assets/tables-B_3MA1Bd.js",
+    "name": "tables",
+    "src": "app/routes/admin/tables.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/confirm.tsx?__react-router-build-client-route": {
+    "file": "assets/confirm-BjSXbTp1.js",
+    "name": "confirm",
+    "src": "app/routes/confirm.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  },
+  "app/routes/home.tsx?__react-router-build-client-route": {
+    "file": "assets/home-C_q9PpLE.js",
+    "name": "home",
+    "src": "app/routes/home.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js",
+      "_cn-DcR91HI6.js"
+    ]
+  },
+  "app/routes/invitation.tsx?__react-router-build-client-route": {
+    "file": "assets/invitation-EKUPq7Ht.js",
+    "name": "invitation",
+    "src": "app/routes/invitation.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js",
+      "_cn-DcR91HI6.js"
+    ]
+  },
+  "node_modules/@react-router/dev/dist/config/defaults/entry.client.tsx": {
+    "file": "assets/entry.client-BMoMsO2z.js",
+    "name": "entry.client",
+    "src": "node_modules/@react-router/dev/dist/config/defaults/entry.client.tsx",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-Cu1ullCA.js"
+    ]
+  }
+}
