@@ -45,7 +45,7 @@
 .open-hero-intro, .open-hero-venue {
   margin-bottom: 12px;
   font-family: "Cinzel", Georgia, serif;
-  font-size: .75rem;
+  font-size: .9rem;
   letter-spacing: .3em;
   text-transform: uppercase;
 }
@@ -213,11 +213,12 @@
 }
 .blessing-hero h2 {
   margin: 0 0 20px;
-  color: var(--ink);
-  font-family: "Pinyon Script", cursive;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  color: var(--gold);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
   font-weight: 400;
-  line-height: 1.15;
+  font-style: italic;
+  line-height: 1.4;
   text-wrap: balance;
 }
 .blessing-hero p {
@@ -252,7 +253,7 @@
   display: block;
   color: var(--ink);
 }
-.blessing-hero .mothers-amp {
+.blessing-hero .mothers span.mothers-amp {
   color: var(--gold);
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 1.6rem;
@@ -262,7 +263,7 @@
   .blessing-hero .mothers {
     font-size: 2.8rem;
   }
-  .blessing-hero .mothers-amp {
+  .blessing-hero .mothers span.mothers-amp {
     font-size: 2rem;
   }
 }
@@ -270,7 +271,7 @@
   .blessing-hero .mothers {
     font-size: 3.5rem;
   }
-  .blessing-hero .mothers-amp {
+  .blessing-hero .mothers span.mothers-amp {
     font-size: 2.4rem;
   }
 }
@@ -364,10 +365,10 @@
 
 @media (max-width: 700px) {
   .open-hero-image { object-position: center center; }
-  .open-hero-content { padding-bottom: 125px; }
+  .open-hero-content { padding-bottom: 50px; }
   .open-hero h1 { font-size: clamp(4.4rem, 17vw, 6.2rem); line-height: .96; }
   .open-hero h1 span { display: block; margin: .12em 0; }
-  .open-hero-intro { font-size: .62rem; }
+  .open-hero-intro { font-size: .75rem; }
   .open-hero-date { margin-top: 23px; font-size: 1.32rem; }
   .open-hero-venue { font-size: .58rem; }
   .floating-music { right: 17px; bottom: 17px; width: 50px; height: 50px; }
@@ -392,7 +393,7 @@
   .promise-section { padding-top: 110px; padding-bottom: 120px; }
   .blessing-hero { padding: 50px 22px; }
   .blessing-hero-inner { padding: 55px 15px 60px; }
-  .blessing-hero h2 { font-size: clamp(3.7rem, 14vw, 5.2rem); }
+  .blessing-hero h2 { font-size: 1.5rem; }
   .blessing-hero p { font-size: 1.4rem; }
   .blessing-hero .mothers { flex-direction: column; gap: 6px; margin-top: 35px; font-size: 2.2rem; }
   .blessing-section { padding: 0 22px 100px; }

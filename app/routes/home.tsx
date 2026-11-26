@@ -272,8 +272,8 @@ function Invitation({ playing, onToggleMusic }: { playing: boolean; onToggleMusi
           <p className="open-hero-intro">Nos casamos</p>
           <h1 id="open-title">Patricia <span>&amp;</span> Fernando</h1>
           <p className="open-hero-date">23 de enero de 2027</p>
-          <span className="open-hero-rule" aria-hidden="true" />
-          <p className="open-hero-venue">Hacienda la Victoria</p>
+          {/* <span className="open-hero-rule" aria-hidden="true" />
+          <p className="open-hero-venue">Hacienda la Victoria</p> */}
         </div>
             {/* <a className="scroll-cue" href="#historia" aria-label="Ir a nuestra historia">
               <span>Desliza para descubrir</span>

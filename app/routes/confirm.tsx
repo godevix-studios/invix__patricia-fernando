@@ -538,6 +538,134 @@ function ConfirmWrapper({ children }: { children: React.ReactNode }) {
             font-size: 1.2rem;
           }
         }
+        
+        /* Modal styles */
+        .confirm-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(1, 24, 53, 0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          z-index: 1000;
+          animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .confirm-modal {
+          width: 100%;
+          max-width: 400px;
+          background: var(--paper-light);
+          padding: 32px 28px;
+          text-align: center;
+          animation: slideUp 0.25s ease;
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .confirm-modal-icon {
+          width: 56px;
+          height: 56px;
+          margin: 0 auto 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(164, 123, 86, 0.12);
+          color: var(--gold);
+        }
+        
+        .confirm-modal-title {
+          margin: 0 0 16px;
+          font-family: 'Pinyon Script', cursive;
+          font-size: 2rem;
+          font-weight: 400;
+          color: var(--ink);
+        }
+        
+        .confirm-modal-text {
+          margin: 0;
+          font-size: 1.05rem;
+          line-height: 1.5;
+          color: var(--ink-soft);
+        }
+        
+        .confirm-modal-text strong {
+          color: var(--ink);
+        }
+        
+        .confirm-modal-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 28px;
+        }
+        
+        .confirm-modal-btn-cancel {
+          flex: 1;
+          min-height: 48px;
+          padding: 0 20px;
+          border: 1px solid var(--gold-light);
+          border-radius: 999px;
+          background: transparent;
+          color: var(--ink-soft);
+          font-family: 'Cinzel', Georgia, serif;
+          font-size: 0.65rem;
+          font-weight: 400;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s;
+        }
+        
+        .confirm-modal-btn-cancel:hover {
+          background: rgba(164, 123, 86, 0.08);
+          color: var(--ink);
+        }
+        
+        .confirm-modal-btn-confirm {
+          flex: 1;
+          min-height: 48px;
+          padding: 0 20px;
+          border: 1px solid var(--ink);
+          border-radius: 999px;
+          background: var(--ink);
+          color: var(--paper-light);
+          font-family: 'Cinzel', Georgia, serif;
+          font-size: 0.65rem;
+          font-weight: 500;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        
+        .confirm-modal-btn-confirm:hover {
+          background: #0a2847;
+        }
+        
+        @media (max-width: 500px) {
+          .confirm-modal {
+            padding: 28px 20px;
+          }
+          
+          .confirm-modal-actions {
+            flex-direction: column-reverse;
+          }
+        }
       `}</style>
       {children}
     </div>
@@ -734,6 +862,7 @@ function ConfirmationForm({
     }
     return names;
   });
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   if (actionData?.success === "confirmed") {
     return (
@@ -850,9 +979,8 @@ function ConfirmationForm({
               </button>
 
               <button
-                type="submit"
-                name="intent"
-                value="decline"
+                type="button"
+                onClick={() => setShowDeclineModal(true)}
                 disabled={isSubmitting}
                 className="confirm-btn-secondary"
               >
@@ -866,6 +994,47 @@ function ConfirmationForm({
           </p>
         </div>
       </div>
+
+      {/* Modal de confirmación para declinar */}
+      {showDeclineModal && (
+        <div className="confirm-modal-overlay" onClick={() => setShowDeclineModal(false)}>
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-modal-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h2 className="confirm-modal-title">¿Confirmar inasistencia?</h2>
+            <p className="confirm-modal-text">
+              Estás a punto de confirmar que <strong>ninguno de los {group.max_guests} invitado{group.max_guests > 1 ? "s" : ""}</strong> podrá asistir a la boda.
+            </p>
+            <p className="confirm-modal-text" style={{ marginTop: 8, fontSize: '0.95rem' }}>
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="confirm-modal-actions">
+              <button
+                type="button"
+                onClick={() => setShowDeclineModal(false)}
+                className="confirm-modal-btn-cancel"
+              >
+                Cancelar
+              </button>
+              <Form method="post">
+                <button
+                  type="submit"
+                  name="intent"
+                  value="decline"
+                  className="confirm-modal-btn-confirm"
+                >
+                  Sí, no podré asistir
+                </button>
+              </Form>
+            </div>
+          </div>
+        </div>
+      )}
     </ConfirmWrapper>
   );
 }
