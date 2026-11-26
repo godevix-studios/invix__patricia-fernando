@@ -8,7 +8,7 @@ import {
   useNavigation,
 } from "react-router";
 import type { Route } from "./+types/guests-new";
-import { generateToken, type Table } from "~/lib/db.server";
+import { generateToken, validateCapacity, getCapacityStatus, type Table } from "~/lib/db.server";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
 
 export function meta() {
@@ -34,7 +34,13 @@ export async function loader({ context }: Route.LoaderArgs) {
     )
     .all<Table & { current_occupancy: number }>();
 
-  return { tables: tablesResult.results };
+  // Obtener estado de capacidad para mostrar warning
+  const capacityStatus = await getCapacityStatus(db);
+
+  return { 
+    tables: tablesResult.results,
+    capacityStatus,
+  };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -57,6 +63,12 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const { env } = getCloudflareContext(context);
   const db = env.DB;
+
+  // Validar capacidad disponible
+  const capacityValidation = await validateCapacity(db, maxGuests);
+  if (!capacityValidation.valid) {
+    return { error: capacityValidation.message };
+  }
 
   // Generar token único
   let token = generateToken();
@@ -136,7 +148,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function NewGuestPage() {
-  const { tables } = useLoaderData<typeof loader>();
+  const { tables, capacityStatus } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -173,6 +185,23 @@ export default function NewGuestPage() {
         <Form method="post" className="space-y-6">
           {actionData?.error && (
             <div className="admin-alert-error">{actionData.error}</div>
+          )}
+
+          {/* Warning de capacidad */}
+          {capacityStatus && capacityStatus.available <= 20 && capacityStatus.available > 0 && (
+            <div className="p-4 bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] rounded-lg">
+              <p className="text-sm text-[var(--admin-text-primary)]">
+                ⚠️ <strong>Atención:</strong> Solo quedan {capacityStatus.available} pases disponibles de {capacityStatus.maxCapacity} totales.
+              </p>
+            </div>
+          )}
+
+          {capacityStatus && capacityStatus.available === 0 && (
+            <div className="p-4 bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] rounded-lg">
+              <p className="text-sm text-[var(--admin-text-primary)]">
+                🚫 <strong>Capacidad máxima alcanzada.</strong> No se pueden crear nuevas invitaciones hasta que se liberen pases.
+              </p>
+            </div>
           )}
 
           {/* Información del representante */}

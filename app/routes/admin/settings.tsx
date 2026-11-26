@@ -1,6 +1,6 @@
 import { Form, useActionData, useLoaderData, useNavigation } from "react-router";
 import type { Route } from "./+types/settings";
-import { getSetting, setSetting } from "~/lib/db.server";
+import { getSetting, setSetting, getCapacityStatus } from "~/lib/db.server";
 import { hashPassword } from "~/lib/auth.server";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
 
@@ -12,12 +12,16 @@ export async function loader({ context }: Route.LoaderArgs) {
   const { env } = getCloudflareContext(context);
   const db = env.DB;
 
-  const [whatsappTemplate, weddingDate, coupleNames, venueName] = await Promise.all([
+  const [whatsappTemplate, weddingDate, coupleNames, venueName, maxCapacity] = await Promise.all([
     getSetting(db, "whatsapp_template"),
     getSetting(db, "wedding_date"),
     getSetting(db, "couple_names"),
     getSetting(db, "venue_name"),
+    getSetting(db, "max_capacity"),
   ]);
+
+  // Obtener estado de capacidad si está configurado
+  const capacityStatus = await getCapacityStatus(db);
 
   const appUrl = env.APP_URL || "http://localhost:5173";
 
@@ -26,6 +30,8 @@ export async function loader({ context }: Route.LoaderArgs) {
     weddingDate: weddingDate || "",
     coupleNames: coupleNames || "",
     venueName: venueName || "",
+    maxCapacity: maxCapacity || "",
+    capacityStatus,
     appUrl,
   };
 }
@@ -54,6 +60,34 @@ export async function action({ request, context }: Route.ActionArgs) {
     ]);
 
     return { success: "Información del evento actualizada", section: "event" };
+  }
+
+  if (intent === "capacity") {
+    const maxCapacityStr = formData.get("maxCapacity") as string;
+
+    // Si está vacío, eliminar el límite
+    if (!maxCapacityStr || maxCapacityStr.trim() === "") {
+      await setSetting(db, "max_capacity", "");
+      return { success: "Límite de capacidad desactivado", section: "capacity" };
+    }
+
+    const maxCapacity = parseInt(maxCapacityStr, 10);
+
+    if (isNaN(maxCapacity) || maxCapacity <= 0) {
+      return { error: "La capacidad debe ser un número positivo", section: "capacity" };
+    }
+
+    // Validar que no sea menor que la capacidad actual ocupada
+    const capacityStatus = await getCapacityStatus(db);
+    if (capacityStatus && capacityStatus.totalOccupied > maxCapacity) {
+      return {
+        error: `No puedes establecer una capacidad menor a la ocupación actual (${capacityStatus.totalOccupied} pases ocupados)`,
+        section: "capacity",
+      };
+    }
+
+    await setSetting(db, "max_capacity", maxCapacity.toString());
+    return { success: "Capacidad máxima actualizada", section: "capacity" };
   }
 
   if (intent === "password") {
@@ -101,7 +135,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function SettingsPage() {
-  const { whatsappTemplate, weddingDate, coupleNames, venueName, appUrl } =
+  const { whatsappTemplate, weddingDate, coupleNames, venueName, maxCapacity, capacityStatus, appUrl } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -229,6 +263,61 @@ export default function SettingsPage() {
                 className="admin-btn-primary w-full"
               >
                 {isSubmitting ? "Guardando..." : "Guardar Información"}
+              </button>
+            </Form>
+          </div>
+
+          {/* Capacidad del Evento */}
+          <div className="admin-card p-6">
+            <h2 className="admin-section-title mb-4">Capacidad del Evento</h2>
+            <Form method="post" className="space-y-4">
+              <input type="hidden" name="intent" value="capacity" />
+
+              {actionData?.section === "capacity" && actionData?.error && (
+                <div className="admin-alert-error">{actionData.error}</div>
+              )}
+              {actionData?.section === "capacity" && actionData?.success && (
+                <div className="admin-alert-success">{actionData.success}</div>
+              )}
+
+              <div>
+                <label htmlFor="maxCapacity" className="admin-label">
+                  Capacidad máxima (pases totales)
+                </label>
+                <input
+                  type="number"
+                  id="maxCapacity"
+                  name="maxCapacity"
+                  min="0"
+                  defaultValue={maxCapacity}
+                  placeholder="Dejar vacío para sin límite"
+                  className="admin-input"
+                />
+                <p className="admin-help-text">
+                  Límite total de invitados que pueden asistir al evento. Incluye confirmados, pendientes y pases en pool.
+                </p>
+              </div>
+
+              {capacityStatus && (
+                <div className="p-4 bg-[var(--admin-surface-elevated)] rounded-lg border border-[var(--admin-border)]">
+                  <p className="text-sm font-medium text-[var(--admin-text-primary)] mb-2">
+                    Ocupación actual:
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--admin-text-primary)] mb-2">
+                    {capacityStatus.totalOccupied} pases ocupados
+                  </p>
+                  <p className="text-xs text-[var(--admin-text-secondary)]">
+                    {capacityStatus.confirmed} confirmados • {capacityStatus.pending} pendientes • {capacityStatus.poolAvailable} en pool
+                  </p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="admin-btn-primary w-full"
+              >
+                {isSubmitting ? "Guardando..." : "Guardar Capacidad"}
               </button>
             </Form>
           </div>

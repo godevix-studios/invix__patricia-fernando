@@ -8,8 +8,10 @@ Invitación digital de boda con panel de administración para gestionar invitado
 - 👥 **Gestión de invitados** - Individuales o grupos con representante
 - 🪑 **Gestión de mesas** - Asignación automática y manual
 - 🎫 **Pool de pases** - Reasignación de pases no utilizados
+- 🎯 **Control de capacidad** - Límite total de invitados con validaciones automáticas
 - 📱 **WhatsApp integrado** - Envío de invitaciones con plantilla personalizable
 - ✅ **Confirmación online** - Los invitados confirman y completan nombres
+- 🔄 **Reactivación de invitaciones** - Reactivar invitaciones rechazadas con validación
 - ☁️ **Cloudflare D1** - Base de datos SQLite en el edge
 
 ## Stack Tecnológico
@@ -180,6 +182,52 @@ Despliega en Railway, Render, Fly.io, o cualquier plataforma que soporte Node.js
 | `npm run db:migrate:local` | Migrar DB local |
 | `npm run db:migrate:remote` | Migrar DB remota |
 | `npm run deploy` | Build + Deploy a Cloudflare |
+
+## Sistema de Control de Capacidad
+
+El sistema incluye control de capacidad total para el evento:
+
+### Configuración
+
+1. Ve a `/admin/settings`
+2. En "Capacidad del Evento", ingresa el límite máximo de invitados
+3. El sistema contabiliza: confirmados + pendientes + pases en pool
+
+### Validaciones Automáticas
+
+- ✅ **Al crear invitación:** Valida que no exceda el límite total
+- ✅ **Al editar invitación:** Valida solo el incremento de pases
+- ✅ **Al reactivar rechazada:** Modal que pregunta cuántos pases asignar
+- ✅ **Pool incluido:** Los pases no asignados en el pool cuentan como ocupados
+
+### Visualización
+
+- Dashboard muestra ocupación actual con barra de progreso
+- Colores: verde (<75%), amarillo (75-95%), rojo (>95%)
+- Warnings cuando quedan pocos pases disponibles
+
+### Scripts de Testing
+
+Usa el script helper para testing local:
+
+```bash
+# Ver comandos disponibles
+./scripts/test-capacity.sh help
+
+# Configurar capacidad de prueba
+./scripts/test-capacity.sh set-capacity 50
+
+# Ver estado actual
+./scripts/test-capacity.sh show-capacity
+
+# Crear datos de prueba
+./scripts/test-capacity.sh create-test-data
+
+# Resetear base de datos
+./scripts/test-capacity.sh reset-db
+```
+
+Ver `TESTING_CAPACITY.md` para guía completa de pruebas.
 
 ---
 

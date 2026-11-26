@@ -94,6 +94,61 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {/* Capacidad del Evento (si está configurada) */}
+      {metrics.capacityStatus && (
+        <div className="admin-card p-6">
+          <h3 className="text-xl text-[var(--content-primary)] mb-4">Capacidad del Evento</h3>
+          
+          <div className="mb-4">
+            <div className="flex items-baseline justify-between mb-2">
+              <span className="text-3xl font-semibold text-[var(--admin-text-primary)]">
+                {metrics.totalOccupied} <span className="text-lg text-[var(--admin-text-secondary)]">/ {metrics.maxCapacity}</span>
+              </span>
+              <span className="text-sm text-[var(--admin-text-secondary)]">
+                pases ocupados
+              </span>
+            </div>
+            
+            <div className="admin-progress" style={{ height: '12px' }}>
+              <div
+                className={`admin-progress-bar ${
+                  (metrics.totalOccupied! / metrics.maxCapacity!) > 0.95 
+                    ? "error" 
+                    : (metrics.totalOccupied! / metrics.maxCapacity!) > 0.75 
+                    ? "warning" 
+                    : "success"
+                }`}
+                style={{ width: `${Math.min((metrics.totalOccupied! / metrics.maxCapacity!) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 text-sm text-[var(--admin-text-secondary)]">
+            <span>{metrics.capacityStatus.confirmed} confirmados</span>
+            <span>•</span>
+            <span>{metrics.capacityStatus.pending} pendientes</span>
+            <span>•</span>
+            <span>{metrics.capacityStatus.poolAvailable} en pool</span>
+          </div>
+
+          {metrics.capacityAvailable! <= 10 && metrics.capacityAvailable! > 0 && (
+            <div className="mt-4 p-3 bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] rounded-lg">
+              <p className="text-sm text-[var(--admin-text-primary)]">
+                ⚠️ Solo quedan <strong>{metrics.capacityAvailable} pases disponibles</strong>
+              </p>
+            </div>
+          )}
+
+          {metrics.capacityAvailable! === 0 && (
+            <div className="mt-4 p-3 bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] rounded-lg">
+              <p className="text-sm text-[var(--admin-text-primary)]">
+                🚫 <strong>Capacidad máxima alcanzada.</strong> No se pueden crear nuevas invitaciones.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Métricas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <MetricCard

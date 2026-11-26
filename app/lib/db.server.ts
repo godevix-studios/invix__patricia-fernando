@@ -116,6 +116,9 @@ export async function getDashboardMetrics(db: D1Database) {
     db.prepare("SELECT COUNT(*) as total FROM tables").first<{ total: number }>(),
   ]);
 
+  // Obtener información de capacidad
+  const capacityStatus = await getCapacityStatus(db);
+
   return {
     totalInvited: totalGroups?.total ?? 0,
     confirmed: confirmed?.total ?? 0,
@@ -123,6 +126,11 @@ export async function getDashboardMetrics(db: D1Database) {
     declined: declined?.total ?? 0,
     poolPasses: poolPasses?.total ?? 0,
     tables: tables?.total ?? 0,
+    // Incluir datos de capacidad si está configurado
+    maxCapacity: capacityStatus?.maxCapacity ?? null,
+    totalOccupied: capacityStatus?.totalOccupied ?? null,
+    capacityAvailable: capacityStatus?.available ?? null,
+    capacityStatus,
   };
 }
 
@@ -137,4 +145,117 @@ export function generateToken(): string {
     token += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return token;
+}
+
+/**
+ * Estado de capacidad del evento
+ */
+export interface CapacityStatus {
+  maxCapacity: number;
+  confirmed: number;
+  pending: number;
+  poolAvailable: number;
+  totalOccupied: number;
+  available: number;
+}
+
+/**
+ * Obtiene el estado actual de capacidad del evento
+ * Retorna null si no hay límite de capacidad configurado
+ */
+export async function getCapacityStatus(db: D1Database): Promise<CapacityStatus | null> {
+  // Obtener capacidad máxima de settings
+  const maxCapacitySetting = await getSetting(db, "max_capacity");
+  if (!maxCapacitySetting) {
+    return null;
+  }
+
+  const maxCapacity = parseInt(maxCapacitySetting, 10);
+  if (isNaN(maxCapacity) || maxCapacity <= 0) {
+    return null;
+  }
+
+  // Calcular confirmados (suma de confirmed_count donde status='confirmed')
+  const confirmedResult = await db
+    .prepare("SELECT COALESCE(SUM(confirmed_count), 0) as total FROM guest_groups WHERE status = 'confirmed'")
+    .first<{ total: number }>();
+  const confirmed = confirmedResult?.total ?? 0;
+
+  // Calcular pendientes (suma de max_guests donde status='pending')
+  const pendingResult = await db
+    .prepare("SELECT COALESCE(SUM(max_guests), 0) as total FROM guest_groups WHERE status = 'pending'")
+    .first<{ total: number }>();
+  const pending = pendingResult?.total ?? 0;
+
+  // Calcular pases en pool disponibles (no asignados)
+  const poolResult = await db
+    .prepare("SELECT COALESCE(SUM(quantity), 0) as total FROM pass_pool WHERE assigned_to_group_id IS NULL")
+    .first<{ total: number }>();
+  const poolAvailable = poolResult?.total ?? 0;
+
+  // Calcular totales
+  const totalOccupied = confirmed + pending + poolAvailable;
+  const available = Math.max(0, maxCapacity - totalOccupied);
+
+  return {
+    maxCapacity,
+    confirmed,
+    pending,
+    poolAvailable,
+    totalOccupied,
+    available,
+  };
+}
+
+/**
+ * Valida si hay capacidad disponible para agregar pases
+ * @param db Base de datos
+ * @param requestedPasses Número de pases solicitados
+ * @param excludeGroupId ID del grupo a excluir del cálculo (para ediciones)
+ * @returns Objeto con resultado de validación y mensaje de error si aplica
+ */
+export async function validateCapacity(
+  db: D1Database,
+  requestedPasses: number,
+  excludeGroupId?: number
+): Promise<{ valid: boolean; message?: string; status?: CapacityStatus }> {
+  // Obtener estado de capacidad
+  const status = await getCapacityStatus(db);
+
+  // Si no hay límite configurado, permitir operación
+  if (!status) {
+    return { valid: true };
+  }
+
+  let adjustedOccupied = status.totalOccupied;
+
+  // Si se proporciona excludeGroupId, restar sus pases actuales del cálculo
+  if (excludeGroupId) {
+    const groupResult = await db
+      .prepare("SELECT max_guests, status FROM guest_groups WHERE id = ?")
+      .bind(excludeGroupId)
+      .first<{ max_guests: number; status: string }>();
+
+    if (groupResult) {
+      // Solo restar si el grupo está en pending o confirmed
+      // Los grupos declined no cuentan en la ocupación actual
+      if (groupResult.status === "pending" || groupResult.status === "confirmed") {
+        adjustedOccupied -= groupResult.max_guests;
+      }
+    }
+  }
+
+  // Calcular nueva ocupación
+  const newOccupied = adjustedOccupied + requestedPasses;
+
+  // Validar capacidad
+  if (newOccupied > status.maxCapacity) {
+    return {
+      valid: false,
+      message: `Capacidad excedida: ${newOccupied}/${status.maxCapacity} pases ocupados. No hay cupos disponibles.`,
+      status,
+    };
+  }
+
+  return { valid: true, status };
 }

@@ -6,9 +6,10 @@ import {
   useLoaderData,
   useNavigation,
 } from "react-router";
+import { useState, useEffect } from "react";
 import type { Route } from "./+types/guests-edit";
 import type { GuestGroup, Guest, Table } from "~/lib/db.server";
-import { getSetting } from "~/lib/db.server";
+import { getSetting, validateCapacity, getCapacityStatus } from "~/lib/db.server";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
 import { IconClipboard, IconEye, IconWhatsApp } from "~/components/admin-icons";
 
@@ -65,6 +66,9 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   const weddingDate = await getSetting(db, "wedding_date") || "";
   const coupleNames = await getSetting(db, "couple_names") || "";
 
+  // Obtener estado de capacidad
+  const capacityStatus = await getCapacityStatus(db);
+
   return {
     group,
     guests: guestsResult.results,
@@ -73,6 +77,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     whatsappTemplate,
     weddingDate,
     coupleNames,
+    capacityStatus,
   };
 }
 
@@ -120,6 +125,51 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     return { success: "Confirmación reseteada" };
   }
 
+  if (intent === "reactivate") {
+    const newMaxGuests = parseInt(formData.get("newMaxGuests") as string, 10);
+    
+    // Obtener información del grupo
+    const group = await db
+      .prepare("SELECT max_guests, status FROM guest_groups WHERE id = ?")
+      .bind(groupId)
+      .first<{ max_guests: number; status: string }>();
+
+    if (!group) {
+      return { error: "Grupo no encontrado" };
+    }
+
+    if (group.status !== "declined") {
+      return { error: "Solo se pueden reactivar invitaciones rechazadas" };
+    }
+
+    // Validar que newMaxGuests sea válido
+    if (isNaN(newMaxGuests) || newMaxGuests < 1) {
+      return { error: "El número de pases debe ser al menos 1" };
+    }
+
+    // Validar capacidad disponible (excluyendo este grupo ya que está declined)
+    const capacityValidation = await validateCapacity(db, newMaxGuests, groupId);
+    if (!capacityValidation.valid) {
+      return { error: capacityValidation.message };
+    }
+
+    // Reactivar la invitación
+    await db
+      .prepare(
+        "UPDATE guest_groups SET status = 'pending', max_guests = ?, confirmed_count = 0, confirmed_at = NULL WHERE id = ?"
+      )
+      .bind(newMaxGuests, groupId)
+      .run();
+
+    // Marcar todos los guests como no confirmados
+    await db
+      .prepare("UPDATE guests SET confirmed = 0 WHERE group_id = ?")
+      .bind(groupId)
+      .run();
+
+    return { success: `Invitación reactivada con ${newMaxGuests} pase${newMaxGuests > 1 ? "s" : ""}` };
+  }
+
   // Update normal
   const name = formData.get("name") as string;
   const groupName = formData.get("groupName") as string;
@@ -138,14 +188,27 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
   // Verificar que maxGuests no sea menor que confirmed_count si ya confirmó
   const current = await db
-    .prepare("SELECT confirmed_count, status FROM guest_groups WHERE id = ?")
+    .prepare("SELECT confirmed_count, status, max_guests FROM guest_groups WHERE id = ?")
     .bind(groupId)
-    .first<{ confirmed_count: number; status: string }>();
+    .first<{ confirmed_count: number; status: string; max_guests: number }>();
 
-  if (current && current.status === "confirmed" && maxGuests < current.confirmed_count) {
+  if (!current) {
+    return { error: "Grupo no encontrado" };
+  }
+
+  if (current.status === "confirmed" && maxGuests < current.confirmed_count) {
     return {
       error: `No puedes reducir los pases por debajo de la cantidad confirmada (${current.confirmed_count})`,
     };
+  }
+
+  // Validar capacidad si se está aumentando el número de pases
+  const increment = maxGuests - current.max_guests;
+  if (increment > 0) {
+    const capacityValidation = await validateCapacity(db, increment, groupId);
+    if (!capacityValidation.valid) {
+      return { error: capacityValidation.message };
+    }
   }
 
   // Verificar capacidad de la mesa
@@ -226,10 +289,22 @@ export default function EditGuestPage() {
     whatsappTemplate,
     weddingDate,
     coupleNames,
+    capacityStatus,
   } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+
+  // Estados para el modal de reactivación
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
+  const [reactivatePasses, setReactivatePasses] = useState(group.max_guests);
+
+  // Cerrar modal cuando la reactivación es exitosa
+  useEffect(() => {
+    if (actionData?.success && actionData.success.includes("reactivada")) {
+      setShowReactivateModal(false);
+    }
+  }, [actionData]);
 
   const invitationLink = `${appUrl}/i/${group.token}`;
 
@@ -510,6 +585,15 @@ export default function EditGuestPage() {
               Zona de peligro
             </h2>
             <div className="space-y-3">
+              {group.status === "declined" && (
+                <button
+                  type="button"
+                  onClick={() => setShowReactivateModal(true)}
+                  className="admin-btn-warning w-full text-sm"
+                >
+                  Reactivar invitación
+                </button>
+              )}
               {group.status === "confirmed" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="reset" />
@@ -543,6 +627,79 @@ export default function EditGuestPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de reactivación */}
+      {showReactivateModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowReactivateModal(false)}
+        >
+          <div
+            className="admin-card p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="admin-section-title mb-4">Reactivar invitación</h3>
+            
+            {/* Solo mostrar error si es de reactivación (no de edición normal) */}
+            {actionData?.error && navigation.state === "idle" && (
+              <div className="admin-alert-error mb-4">{actionData.error}</div>
+            )}
+
+            <p className="text-[var(--admin-text-secondary)] mb-4">
+              Esta invitación fue rechazada. ¿Cuántos pases deseas asignar al reactivarla?
+            </p>
+
+            {capacityStatus && (
+              <div className="mb-4 p-3 bg-[var(--admin-surface-elevated)] rounded-lg border border-[var(--admin-border)]">
+                <p className="text-sm text-[var(--admin-text-secondary)]">
+                  Capacidad disponible: <strong className="text-[var(--admin-text-primary)]">{capacityStatus.available} pases</strong>
+                </p>
+              </div>
+            )}
+
+            <Form method="post" className="space-y-4">
+              <input type="hidden" name="intent" value="reactivate" />
+              <input type="hidden" name="newMaxGuests" value={reactivatePasses} />
+
+              <div>
+                <label htmlFor="reactivatePasses" className="admin-label">
+                  Número de pases
+                </label>
+                <input
+                  type="number"
+                  id="reactivatePasses"
+                  min="1"
+                  max={group.max_guests}
+                  value={reactivatePasses}
+                  onChange={(e) => setReactivatePasses(parseInt(e.target.value, 10) || 1)}
+                  className="admin-input"
+                />
+                <p className="admin-help-text">
+                  Máximo original: {group.max_guests} pases
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowReactivateModal(false)}
+                  className="admin-btn-secondary flex-1"
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="admin-btn-primary flex-1"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Reactivando..." : "Reactivar"}
+                </button>
+              </div>
+            </Form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

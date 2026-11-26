@@ -9,6 +9,7 @@ import {
 import type { Route } from "./+types/tables-edit";
 import type { Table } from "~/lib/db.server";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
+import { getCapacityStatus } from "~/lib/db.server";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
@@ -44,9 +45,19 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     .bind(tableId)
     .first<{ count: number }>();
 
+  // Obtener capacidad del evento y capacidad de otras mesas
+  const capacityStatus = await getCapacityStatus(db);
+  
+  const otherTablesCapacity = await db
+    .prepare("SELECT COALESCE(SUM(capacity), 0) as total FROM tables WHERE id != ?")
+    .bind(tableId)
+    .first<{ total: number }>();
+
   return {
     table,
     currentOccupancy: occupancy?.count ?? 0,
+    capacityStatus,
+    otherTablesCapacity: otherTablesCapacity?.total ?? 0,
   };
 }
 
@@ -102,6 +113,25 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     };
   }
 
+  // Validar capacidad del evento si está configurada
+  const capacityStatus = await getCapacityStatus(db);
+  if (capacityStatus) {
+    // Obtener capacidad de otras mesas (excluyendo esta)
+    const otherTablesCapacity = await db
+      .prepare("SELECT COALESCE(SUM(capacity), 0) as total FROM tables WHERE id != ?")
+      .bind(tableId)
+      .first<{ total: number }>();
+
+    const totalTablesCapacity = (otherTablesCapacity?.total ?? 0) + capacity;
+
+    // Validar que la suma de capacidad de mesas no exceda la capacidad del evento
+    if (totalTablesCapacity > capacityStatus.maxCapacity) {
+      return {
+        error: `La capacidad total de mesas (${totalTablesCapacity}) excedería la capacidad del evento (${capacityStatus.maxCapacity}). Reduce la capacidad de esta mesa o aumenta el límite del evento en Configuración.`,
+      };
+    }
+  }
+
   // Verificar nombre duplicado
   const existing = await db
     .prepare("SELECT id FROM tables WHERE name = ? AND id != ?")
@@ -121,10 +151,14 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 }
 
 export default function EditTablePage() {
-  const { table, currentOccupancy } = useLoaderData<typeof loader>();
+  const { table, currentOccupancy, capacityStatus, otherTablesCapacity } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+
+  const maxAllowedCapacity = capacityStatus 
+    ? Math.max(currentOccupancy || 1, capacityStatus.maxCapacity - otherTablesCapacity)
+    : undefined;
 
   return (
     <div className="space-y-6">
@@ -140,6 +174,27 @@ export default function EditTablePage() {
           <Form method="post" className="space-y-6">
             {actionData?.error && (
               <div className="admin-alert-error">{actionData.error}</div>
+            )}
+
+            {/* Warning de capacidad */}
+            {capacityStatus && (
+              <div className="p-4 bg-[var(--admin-surface-elevated)] rounded-lg border border-[var(--admin-border)]">
+                <p className="text-sm font-medium text-[var(--admin-text-primary)] mb-2">
+                  Capacidad del evento
+                </p>
+                <p className="text-xs text-[var(--admin-text-secondary)]">
+                  Límite del evento: {capacityStatus.maxCapacity} invitados
+                </p>
+                <p className="text-xs text-[var(--admin-text-secondary)]">
+                  Capacidad de otras mesas: {otherTablesCapacity}
+                </p>
+                <p className="text-xs text-[var(--admin-text-secondary)]">
+                  Capacidad actual de esta mesa: {table.capacity}
+                </p>
+                <p className="text-xs text-[var(--admin-text-secondary)]">
+                  Máximo permitido para esta mesa: {maxAllowedCapacity}
+                </p>
+              </div>
             )}
 
             <div>
@@ -166,12 +221,18 @@ export default function EditTablePage() {
                 name="capacity"
                 required
                 min={currentOccupancy || 1}
+                max={maxAllowedCapacity}
                 defaultValue={table.capacity}
                 className="admin-input"
               />
               {currentOccupancy > 0 && (
                 <p className="admin-help-text text-[var(--admin-status-pending)]">
                   Mínimo {currentOccupancy} (ocupación actual)
+                </p>
+              )}
+              {capacityStatus && maxAllowedCapacity && (
+                <p className="admin-help-text">
+                  Máximo {maxAllowedCapacity} (límite del evento)
                 </p>
               )}
             </div>

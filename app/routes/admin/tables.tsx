@@ -3,6 +3,7 @@ import type { Route } from "./+types/tables";
 import type { TableWithOccupancy } from "~/lib/db.server";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
 import { IconTable } from "~/components/admin-icons";
+import { getCapacityStatus } from "~/lib/db.server";
 
 export function meta() {
   return [{ title: "Mesas - Panel de Administración" }];
@@ -29,11 +30,22 @@ export async function loader({ context }: Route.LoaderArgs) {
     )
     .all<TableWithOccupancy & { created_at: string }>();
 
-  return { tables: tablesResult.results };
+  // Obtener capacidad del evento y calcular totales
+  const capacityStatus = await getCapacityStatus(db);
+  
+  const totalTablesCapacity = tablesResult.results?.reduce((sum, table) => sum + table.capacity, 0) ?? 0;
+
+  return { 
+    tables: tablesResult.results,
+    capacityStatus,
+    totalTablesCapacity,
+  };
 }
 
 export default function TablesPage() {
-  const { tables } = useLoaderData<typeof loader>();
+  const { tables, capacityStatus, totalTablesCapacity } = useLoaderData<typeof loader>();
+
+  const exceedsEventCapacity = capacityStatus && totalTablesCapacity > capacityStatus.maxCapacity;
 
   return (
     <div className="space-y-6">
@@ -48,6 +60,37 @@ export default function TablesPage() {
           + Nueva Mesa
         </Link>
       </div>
+
+      {/* Warning de capacidad del evento */}
+      {capacityStatus && (
+        <div className={`p-4 rounded-lg border ${
+          exceedsEventCapacity 
+            ? 'bg-[rgba(239,68,68,0.1)] border-[rgba(239,68,68,0.3)]'
+            : 'bg-[var(--admin-surface-elevated)] border-[var(--admin-border)]'
+        }`}>
+          <p className="text-sm font-medium text-[var(--admin-text-primary)] mb-2">
+            Capacidad de mesas vs. evento
+          </p>
+          <div className="flex items-center gap-4 text-xs text-[var(--admin-text-secondary)]">
+            <span>Capacidad total de mesas: <strong>{totalTablesCapacity}</strong></span>
+            <span>•</span>
+            <span>Límite del evento: <strong>{capacityStatus.maxCapacity}</strong></span>
+            {exceedsEventCapacity && (
+              <>
+                <span>•</span>
+                <span className="text-[var(--admin-status-declined)] font-medium">
+                  ⚠️ Las mesas exceden el límite del evento
+                </span>
+              </>
+            )}
+          </div>
+          {exceedsEventCapacity && (
+            <p className="text-xs text-[var(--admin-text-secondary)] mt-2">
+              Reduce la capacidad de algunas mesas o aumenta el límite del evento en <Link to="/admin/settings" className="admin-link">Configuración</Link>.
+            </p>
+          )}
+        </div>
+      )}
 
       {tables.length === 0 ? (
         <div className="admin-card p-12 text-center">

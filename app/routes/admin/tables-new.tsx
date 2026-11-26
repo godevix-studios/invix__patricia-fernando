@@ -1,9 +1,28 @@
-import { Form, Link, redirect, useActionData, useNavigation } from "react-router";
+import { Form, Link, redirect, useActionData, useNavigation, useLoaderData } from "react-router";
 import type { Route } from "./+types/tables-new";
 import { getCloudflareContext } from "~/lib/cloudflare-context";
+import { getCapacityStatus } from "~/lib/db.server";
 
 export function meta() {
   return [{ title: "Nueva Mesa - Panel de Administración" }];
+}
+
+export async function loader({ context }: Route.LoaderArgs) {
+  const { env } = getCloudflareContext(context);
+  const db = env.DB;
+
+  // Obtener capacidad del evento
+  const capacityStatus = await getCapacityStatus(db);
+
+  // Obtener capacidad total de mesas existentes
+  const tablesCapacity = await db
+    .prepare("SELECT COALESCE(SUM(capacity), 0) as total FROM tables")
+    .first<{ total: number }>();
+
+  return {
+    capacityStatus,
+    totalTablesCapacity: tablesCapacity?.total ?? 0,
+  };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -32,6 +51,24 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Ya existe una mesa con ese nombre" };
   }
 
+  // Validar capacidad del evento si está configurada
+  const capacityStatus = await getCapacityStatus(db);
+  if (capacityStatus) {
+    // Obtener capacidad total de mesas existentes
+    const tablesCapacity = await db
+      .prepare("SELECT COALESCE(SUM(capacity), 0) as total FROM tables")
+      .first<{ total: number }>();
+
+    const totalTablesCapacity = (tablesCapacity?.total ?? 0) + capacity;
+
+    // Validar que la suma de capacidad de mesas no exceda la capacidad del evento
+    if (totalTablesCapacity > capacityStatus.maxCapacity) {
+      return {
+        error: `La capacidad total de mesas (${totalTablesCapacity}) excedería la capacidad del evento (${capacityStatus.maxCapacity}). Reduce la capacidad de esta mesa o aumenta el límite del evento en Configuración.`,
+      };
+    }
+  }
+
   await db
     .prepare("INSERT INTO tables (name, capacity) VALUES (?, ?)")
     .bind(name.trim(), capacity)
@@ -41,6 +78,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function NewTablePage() {
+  const { capacityStatus, totalTablesCapacity } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -58,6 +96,24 @@ export default function NewTablePage() {
         <Form method="post" className="space-y-6">
           {actionData?.error && (
             <div className="admin-alert-error">{actionData.error}</div>
+          )}
+
+          {/* Warning de capacidad */}
+          {capacityStatus && (
+            <div className="p-4 bg-[var(--admin-surface-elevated)] rounded-lg border border-[var(--admin-border)]">
+              <p className="text-sm font-medium text-[var(--admin-text-primary)] mb-2">
+                Capacidad del evento
+              </p>
+              <p className="text-xs text-[var(--admin-text-secondary)]">
+                Límite del evento: {capacityStatus.maxCapacity} invitados
+              </p>
+              <p className="text-xs text-[var(--admin-text-secondary)]">
+                Capacidad actual de mesas: {totalTablesCapacity}
+              </p>
+              <p className="text-xs text-[var(--admin-text-secondary)]">
+                Disponible para nuevas mesas: {Math.max(0, capacityStatus.maxCapacity - totalTablesCapacity)}
+              </p>
+            </div>
           )}
 
           <div>
@@ -84,11 +140,13 @@ export default function NewTablePage() {
               name="capacity"
               required
               min="1"
+              max={capacityStatus ? Math.max(1, capacityStatus.maxCapacity - totalTablesCapacity) : undefined}
               defaultValue="10"
               className="admin-input"
             />
             <p className="admin-help-text">
               Número máximo de personas que pueden sentarse en esta mesa.
+              {capacityStatus && ` Máximo recomendado: ${Math.max(1, capacityStatus.maxCapacity - totalTablesCapacity)}`}
             </p>
           </div>
 
