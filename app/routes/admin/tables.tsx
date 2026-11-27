@@ -21,9 +21,16 @@ export async function loader({ context }: Route.LoaderArgs) {
         t.name,
         t.capacity,
         t.created_at,
-        COALESCE(SUM(CASE WHEN gg.status = 'confirmed' THEN gg.confirmed_count ELSE 0 END), 0) as current_occupancy
+        COUNT(DISTINCT CASE 
+          WHEN gta.guest_id IS NOT NULL THEN gta.guest_id
+          WHEN gg.table_id = t.id THEN g.id
+          ELSE NULL
+        END) as current_occupancy
       FROM tables t
+      LEFT JOIN guest_table_assignments gta ON gta.table_id = t.id
       LEFT JOIN guest_groups gg ON gg.table_id = t.id
+      LEFT JOIN guests g ON g.group_id = gg.id
+      WHERE gta.guest_id IS NOT NULL OR g.id IS NOT NULL OR (gta.guest_id IS NULL AND g.id IS NULL)
       GROUP BY t.id
       ORDER BY t.name
     `
@@ -56,9 +63,14 @@ export default function TablesPage() {
             Gestiona las mesas del evento
           </p>
         </div>
-        <Link to="/admin/tables/new" className="admin-btn-primary">
-          + Nueva Mesa
-        </Link>
+        <div className="flex gap-3">
+          <Link to="/admin/tables/bulk" className="admin-btn-secondary">
+            Crear múltiples
+          </Link>
+          <Link to="/admin/tables/new" className="admin-btn-primary">
+            + Nueva Mesa
+          </Link>
+        </div>
       </div>
 
       {/* Warning de capacidad del evento */}

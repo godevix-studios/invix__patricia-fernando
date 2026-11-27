@@ -393,15 +393,49 @@ export default function EditGuestPage() {
                 <label htmlFor="maxGuests" className="admin-label">
                   Número de pases *
                 </label>
-                <input
-                  type="number"
-                  id="maxGuests"
-                  name="maxGuests"
-                  required
-                  min={group.status === "confirmed" ? group.confirmed_count : 1}
-                  defaultValue={group.max_guests}
-                  className="admin-input"
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('maxGuests') as HTMLInputElement;
+                      const currentValue = parseInt(input.value, 10) || 1;
+                      const minValue = group.status === "confirmed" ? group.confirmed_count : 1;
+                      const newValue = Math.max(minValue, currentValue - 1);
+                      input.value = String(newValue);
+                    }}
+                    className="admin-stepper-btn"
+                    aria-label="Disminuir número de pases"
+                    title="Disminuir"
+                  >
+                    −
+                  </button>
+                  
+                  <input
+                    type="number"
+                    id="maxGuests"
+                    name="maxGuests"
+                    required
+                    min={group.status === "confirmed" ? group.confirmed_count : 1}
+                    defaultValue={group.max_guests}
+                    className="admin-input"
+                    style={{ flex: 1 }}
+                  />
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('maxGuests') as HTMLInputElement;
+                      const currentValue = parseInt(input.value, 10) || 1;
+                      const newValue = currentValue + 1;
+                      input.value = String(newValue);
+                    }}
+                    className="admin-stepper-btn"
+                    aria-label="Aumentar número de pases"
+                    title="Aumentar"
+                  >
+                    +
+                  </button>
+                </div>
                 {group.status === "confirmed" && (
                   <p className="admin-help-text text-[var(--admin-status-pending)]">
                     Mínimo {group.confirmed_count} (ya confirmados)
@@ -665,15 +699,40 @@ export default function EditGuestPage() {
                 <label htmlFor="reactivatePasses" className="admin-label">
                   Número de pases
                 </label>
-                <input
-                  type="number"
-                  id="reactivatePasses"
-                  min="1"
-                  max={group.max_guests}
-                  value={reactivatePasses}
-                  onChange={(e) => setReactivatePasses(parseInt(e.target.value, 10) || 1)}
-                  className="admin-input"
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setReactivatePasses(Math.max(1, reactivatePasses - 1))}
+                    disabled={reactivatePasses <= 1}
+                    className="admin-stepper-btn"
+                    aria-label="Disminuir número de pases"
+                    title="Disminuir"
+                  >
+                    −
+                  </button>
+                  
+                  <input
+                    type="number"
+                    id="reactivatePasses"
+                    min="1"
+                    max={group.max_guests}
+                    value={reactivatePasses}
+                    onChange={(e) => setReactivatePasses(parseInt(e.target.value, 10) || 1)}
+                    className="admin-input"
+                    style={{ flex: 1 }}
+                  />
+                  
+                  <button
+                    type="button"
+                    onClick={() => setReactivatePasses(Math.min(group.max_guests, reactivatePasses + 1))}
+                    disabled={reactivatePasses >= group.max_guests}
+                    className="admin-stepper-btn"
+                    aria-label="Aumentar número de pases"
+                    title="Aumentar"
+                  >
+                    +
+                  </button>
+                </div>
                 <p className="admin-help-text">
                   Máximo original: {group.max_guests} pases
                 </p>

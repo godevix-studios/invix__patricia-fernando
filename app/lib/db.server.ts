@@ -58,6 +58,14 @@ export interface PassPool {
   created_at: string;
 }
 
+export interface GuestTableAssignment {
+  id: number;
+  guest_id: number;
+  table_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Tipos extendidos con relaciones
 export interface GuestGroupWithTable extends GuestGroup {
   table_name: string | null;
@@ -69,6 +77,22 @@ export interface GuestGroupWithGuests extends GuestGroup {
 
 export interface TableWithOccupancy extends Table {
   current_occupancy: number;
+}
+
+export interface TableWithPosition extends Table {
+  position_x: number;
+  position_y: number;
+  current_occupancy?: number;
+}
+
+export interface GuestWithAssignment extends Guest {
+  assigned_table_id: number | null;
+  assigned_table_name: string | null;
+}
+
+export interface GuestGroupWithAssignments extends GuestGroup {
+  guests: GuestWithAssignment[];
+  group_table_name: string | null;
 }
 
 // Funciones de utilidad para la base de datos
@@ -258,4 +282,152 @@ export async function validateCapacity(
   }
 
   return { valid: true, status };
+}
+
+/**
+ * Obtiene la asignación individual de un invitado a una mesa
+ * @param db Base de datos
+ * @param guestId ID del invitado
+ * @returns Asignación si existe, null si no tiene asignación individual
+ */
+export async function getGuestAssignment(
+  db: D1Database,
+  guestId: number
+): Promise<GuestTableAssignment | null> {
+  const result = await db
+    .prepare("SELECT * FROM guest_table_assignments WHERE guest_id = ?")
+    .bind(guestId)
+    .first<GuestTableAssignment>();
+  
+  return result || null;
+}
+
+/**
+ * Obtiene todos los invitados asignados a una mesa
+ * Considera tanto asignaciones individuales como grupales
+ * Prioridad: asignaciones individuales prevalecen sobre grupales
+ * @param db Base de datos
+ * @param tableId ID de la mesa
+ * @returns Array de invitados con sus datos
+ */
+export async function getTableAssignments(
+  db: D1Database,
+  tableId: number
+): Promise<GuestWithAssignment[]> {
+  const result = await db
+    .prepare(
+      `SELECT 
+        g.id,
+        g.group_id,
+        g.name,
+        g.is_representative,
+        g.confirmed,
+        g.created_at,
+        COALESCE(gta.table_id, gg.table_id) as assigned_table_id,
+        COALESCE(t1.name, t2.name) as assigned_table_name
+      FROM guests g
+      INNER JOIN guest_groups gg ON gg.id = g.group_id
+      LEFT JOIN guest_table_assignments gta ON gta.guest_id = g.id
+      LEFT JOIN tables t1 ON t1.id = gta.table_id
+      LEFT JOIN tables t2 ON t2.id = gg.table_id
+      WHERE COALESCE(gta.table_id, gg.table_id) = ?
+      ORDER BY g.is_representative DESC, g.name`
+    )
+    .bind(tableId)
+    .all<GuestWithAssignment>();
+  
+  return result.results || [];
+}
+
+/**
+ * Asigna un invitado individual a una mesa
+ * Crea nueva asignación o actualiza existente
+ * @param db Base de datos
+ * @param guestId ID del invitado
+ * @param tableId ID de la mesa
+ */
+export async function assignGuestToTable(
+  db: D1Database,
+  guestId: number,
+  tableId: number
+): Promise<void> {
+  await db
+    .prepare(
+      `INSERT INTO guest_table_assignments (guest_id, table_id, updated_at)
+       VALUES (?, ?, datetime('now'))
+       ON CONFLICT(guest_id) DO UPDATE SET 
+         table_id = excluded.table_id,
+         updated_at = datetime('now')`
+    )
+    .bind(guestId, tableId)
+    .run();
+}
+
+/**
+ * Elimina la asignación individual de un invitado
+ * El invitado volverá a heredar la mesa de su grupo (si tiene)
+ * @param db Base de datos
+ * @param guestId ID del invitado
+ */
+export async function removeGuestAssignment(
+  db: D1Database,
+  guestId: number
+): Promise<void> {
+  await db
+    .prepare("DELETE FROM guest_table_assignments WHERE guest_id = ?")
+    .bind(guestId)
+    .run();
+}
+
+/**
+ * Obtiene todas las mesas con sus posiciones y ocupación actual
+ * @param db Base de datos
+ * @returns Array de mesas con posiciones y ocupación
+ */
+export async function getTablesWithPositions(
+  db: D1Database
+): Promise<TableWithPosition[]> {
+  const result = await db
+    .prepare(
+      `SELECT 
+        t.id,
+        t.name,
+        t.capacity,
+        t.created_at,
+        t.position_x,
+        t.position_y,
+        COUNT(DISTINCT CASE 
+          WHEN gta.guest_id IS NOT NULL THEN gta.guest_id
+          WHEN gg.table_id = t.id AND gg.status = 'confirmed' THEN g.id
+          ELSE NULL
+        END) as current_occupancy
+      FROM tables t
+      LEFT JOIN guest_table_assignments gta ON gta.table_id = t.id
+      LEFT JOIN guest_groups gg ON gg.table_id = t.id AND gg.status = 'confirmed'
+      LEFT JOIN guests g ON g.group_id = gg.id
+      GROUP BY t.id
+      ORDER BY t.name`
+    )
+    .all<TableWithPosition>();
+  
+  return result.results || [];
+}
+
+/**
+ * Actualiza la posición de una mesa en el canvas
+ * @param db Base de datos
+ * @param tableId ID de la mesa
+ * @param x Posición X (en píxeles)
+ * @param y Posición Y (en píxeles)
+ */
+export async function updateTablePosition(
+  db: D1Database,
+  tableId: number,
+  x: number,
+  y: number
+): Promise<void> {
+  await db
+    .prepare("UPDATE tables SET position_x = ?, position_y = ? WHERE id = ?")
+    .bind(x, y, tableId)
+    .run();
 }

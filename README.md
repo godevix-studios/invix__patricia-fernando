@@ -7,6 +7,7 @@ Invitación digital de boda con panel de administración para gestionar invitado
 - 💌 **Invitación digital interactiva** - Diseño elegante con animaciones y música
 - 👥 **Gestión de invitados** - Individuales o grupos con representante
 - 🪑 **Gestión de mesas** - Asignación automática y manual
+- 🎨 **Distribución de mesas con canvas** - Sistema visual de drag & drop para asignar invitados a mesas
 - 🎫 **Pool de pases** - Reasignación de pases no utilizados
 - 🎯 **Control de capacidad** - Límite total de invitados con validaciones automáticas
 - 📱 **WhatsApp integrado** - Envío de invitaciones con plantilla personalizable
@@ -17,9 +18,14 @@ Invitación digital de boda con panel de administración para gestionar invitado
 ## Stack Tecnológico
 
 - React Router 8 (SSR)
+- React 19.3.1
 - Vite 8
 - Tailwind CSS v4
+- TypeScript 5.9
+- @dnd-kit (Drag & Drop)
+- Motion (Animaciones)
 - Cloudflare D1 (SQLite)
+- Cloudflare Workers (Edge Computing)
 
 ## Desarrollo Local
 
@@ -43,6 +49,12 @@ cp .dev.vars.example .dev.vars
 ```bash
 # Ejecutar migración inicial
 npm run db:migrate:local
+
+# Ejecutar migración del sistema de asignación de mesas
+./scripts/migrate-seating.sh local
+
+# O manualmente:
+wrangler d1 execute patricia-fernando-db --local --file=migrations/0002_seating_assignments.sql
 ```
 
 ### Iniciar servidor de desarrollo
@@ -65,6 +77,9 @@ La aplicación estará disponible en `http://localhost:5173`.
 
 ```
 ├── app/
+│   ├── components/
+│   │   ├── admin-icons.tsx # Iconos del panel admin
+│   │   └── seating/        # Componentes de distribución de mesas
 │   ├── lib/              # Utilidades (auth, db)
 │   ├── routes/
 │   │   ├── admin/        # Panel de administración
@@ -73,6 +88,10 @@ La aplicación estará disponible en `http://localhost:5173`.
 │   │   └── confirm.tsx   # Confirmación de asistencia
 │   └── routes.ts         # Configuración de rutas
 ├── migrations/           # Migraciones SQL
+│   ├── 0001_initial.sql  # Esquema inicial
+│   └── 0002_seating_assignments.sql # Sistema de asignación de mesas
+├── docs/                 # Documentación
+│   └── SEATING_CHART.md  # Documentación del sistema de distribución
 ├── scripts/              # Scripts de utilidad
 └── wrangler.toml         # Configuración de Cloudflare
 ```
@@ -87,16 +106,45 @@ La aplicación estará disponible en `http://localhost:5173`.
 | `/admin` | Panel de administración |
 | `/admin/guests` | Gestión de invitados |
 | `/admin/tables` | Gestión de mesas |
+| `/admin/tables/bulk` | Creación masiva de mesas |
+| `/admin/seating-chart` | Distribución visual de mesas (Drag & Drop) |
 | `/admin/pool` | Pool de pases libres |
 | `/admin/settings` | Configuración (WhatsApp, contraseña) |
 
 ## Flujo de Uso
 
 1. **Admin crea invitados** en `/admin/guests/new`
-2. **Admin envía enlaces** por WhatsApp usando el botón integrado
-3. **Invitado recibe enlace** personalizado (`/i/:token`)
-4. **Invitado confirma** en `/confirmar/:token`
-5. **Admin ve confirmaciones** en el dashboard
+2. **Admin crea mesas** en `/admin/tables/bulk` (creación masiva) o `/admin/tables/new` (individual)
+3. **Admin asigna invitados a mesas** en `/admin/seating-chart` usando drag & drop
+4. **Admin envía enlaces** por WhatsApp usando el botón integrado
+5. **Invitado recibe enlace** personalizado (`/i/:token`)
+6. **Invitado confirma** en `/confirmar/:token`
+7. **Admin ve confirmaciones** en el dashboard
+
+## Sistema de Distribución de Mesas
+
+El sistema de distribución de mesas permite asignar invitados visualmente usando drag & drop:
+
+### Características
+
+- **Canvas interactivo** con grid para posicionar mesas
+- **Drag & Drop** de invitados individuales o grupos completos
+- **Validación de capacidad** en tiempo real
+- **Asignaciones mixtas**: individuales prevalecen sobre grupales
+- **Creación masiva** de mesas con nombres personalizados
+- **Optimistic UI** para feedback inmediato
+- **Búsqueda y filtros** de invitados
+
+### Uso Rápido
+
+1. Crear mesas: **Admin → Mesas → Crear múltiples**
+2. Configurar cantidad, capacidad y patrón de nombres
+3. Ir a: **Admin → Distribución**
+4. Expandir grupos para ver invitados individuales
+5. Arrastrar invitados/grupos sobre mesas
+6. Las asignaciones se guardan automáticamente
+
+Ver documentación completa en: [`docs/SEATING_CHART.md`](docs/SEATING_CHART.md)
 
 ## Despliegue en Cloudflare
 

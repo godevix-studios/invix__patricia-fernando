@@ -265,19 +265,44 @@ export default function NewGuestPage() {
               <label htmlFor="maxGuests" className="admin-label">
                 Número de pases *
               </label>
-              <input
-                type="number"
-                id="maxGuests"
-                name="maxGuests"
-                required
-                min="1"
-                max="20"
-                value={maxGuests}
-                onChange={(e) =>
-                  handleMaxGuestsChange(parseInt(e.target.value, 10) || 1)
-                }
-                className="admin-input"
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleMaxGuestsChange(Math.max(1, maxGuests - 1))}
+                  disabled={maxGuests <= 1}
+                  className="admin-stepper-btn"
+                  aria-label="Disminuir número de pases"
+                  title="Disminuir"
+                >
+                  −
+                </button>
+                
+                <input
+                  type="number"
+                  id="maxGuests"
+                  name="maxGuests"
+                  required
+                  min="1"
+                  max="20"
+                  value={maxGuests}
+                  onChange={(e) =>
+                    handleMaxGuestsChange(parseInt(e.target.value, 10) || 1)
+                  }
+                  className="admin-input"
+                  style={{ flex: 1 }}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => handleMaxGuestsChange(Math.min(20, maxGuests + 1))}
+                  disabled={maxGuests >= 20}
+                  className="admin-stepper-btn"
+                  aria-label="Aumentar número de pases"
+                  title="Aumentar"
+                >
+                  +
+                </button>
+              </div>
               <p className="admin-help-text">
                 Máximo de personas que pueden asistir con esta invitación
               </p>

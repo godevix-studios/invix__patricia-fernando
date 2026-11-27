@@ -11,6 +11,7 @@ import {
   IconLogout,
   IconLink,
   IconShield,
+  IconGrid,
 } from "~/components/admin-icons";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -47,6 +48,7 @@ const navItems = [
   { to: "/admin", label: "Dashboard", Icon: IconDashboard, end: true },
   { to: "/admin/guests", label: "Invitados", Icon: IconUsers },
   { to: "/admin/tables", label: "Mesas", Icon: IconTable },
+  { to: "/admin/seating-chart", label: "Distribución", Icon: IconGrid },
   { to: "/admin/pool", label: "Pool de Pases", Icon: IconTicket },
   { to: "/admin/settings", label: "Configuración", Icon: IconSettings },
 ];
